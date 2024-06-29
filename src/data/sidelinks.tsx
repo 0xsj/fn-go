@@ -6,7 +6,7 @@ import {
   IconRouteAltLeft,
   IconTruck,
   IconUsers,
-} from '@tabler/icons-react'
+} from "@tabler/icons-react"
 
 export interface NavLink {
   title: string
@@ -22,53 +22,37 @@ export interface SideLink extends NavLink {
 
 export const sidelinks: SideLink[] = [
   {
-    title: 'Dashboard',
-    label: '128',
-    href: 'dashboard',
+    title: "Overview",
+    label: "",
+    href: "/",
     icon: <IconLayoutDashboard size={18} />,
     isActive: true,
   },
   {
-    title: 'Chats',
-    label: '9',
-    href: 'chats',
+    title: "Employees",
+    label: "9",
+    href: "/employees",
     icon: <IconMessages size={18} />,
     isActive: false,
   },
   {
-    title: 'Partners',
-    label: '',
-    href: 'partners',
+    title: "Documents",
+    label: "",
+    href: "/documents",
     icon: <IconUsers size={18} />,
     isActive: false,
   },
   {
-    title: 'Requests',
-    label: '12',
-    href: 'requests',
-    icon: <IconRouteAltLeft size={18} />,
+    title: "Tasks",
+    label: "",
+    href: "/tasks",
+    icon: <IconChartHistogram size={18} />,
     isActive: false,
-    sub: [
-      {
-        title: 'Trucks',
-        label: '9',
-        href: 'trucks',
-        isActive: false,
-        icon: <IconTruck size={18} />,
-      },
-      {
-        title: 'Cargos',
-        label: '',
-        href: 'cargos',
-        isActive: false,
-        icon: <IconBoxSeam size={18} />,
-      },
-    ],
   },
   {
-    title: 'Analysis',
-    label: '',
-    href: 'analysis',
+    title: "Kanban",
+    label: "",
+    href: "/kanban",
     icon: <IconChartHistogram size={18} />,
     isActive: false,
   },
