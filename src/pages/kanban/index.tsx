@@ -1,13 +1,14 @@
 import { Layout } from "@/components/custom/layout"
-import { Sidebar } from "@/components/sidebar"
 import { useState } from "react"
 
-export default function Dashboard() {
+interface Props {}
+
+export const Kanban: React.FC<Props> = () => {
   return (
     <Layout>
-      <Layout.Header sticky>
+      <Layout.Header>
         <div>
-          <h1>LOGO</h1>
+          <h1>Logo</h1>
         </div>
       </Layout.Header>
       <Layout.Body>
@@ -16,3 +17,4 @@ export default function Dashboard() {
     </Layout>
   )
 }
+export default Kanban
