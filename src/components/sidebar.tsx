@@ -25,6 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       document.body.classList.remove("overflow-hidden")
     }
   }, [navOpened])
+
   return (
     <aside
       className={cn(
@@ -32,14 +33,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className
       )}
     >
-      {/* Overlay in mobile */}
       <div
         onClick={() => setNavOpened(false)}
         className={`absolute inset-0 transition-[opacity] delay-100 duration-700 ${navOpened ? "h-svh opacity-50" : "h-0 opacity-0"} w-full bg-black md:hidden`}
       />
 
       <Layout fixed className={navOpened ? "h-svh" : ""}>
-        {/* Header */}
         <Layout.Header
           sticky
           className='z-50 flex justify-between px-4 py-3 shadow-sm md:px-4'
@@ -78,8 +77,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div
               className={`flex flex-col justify-end truncate ${isCollapsed ? "invisible w-0" : "visible w-auto"}`}
             >
-              <span className='font-medium'>Shadcn Admin</span>
-              <span className='text-xs'>Vite + ShadcnUI</span>
+              <span className='font-medium'>Console</span>
+              <span className='text-xs'></span>
             </div>
           </div>
 

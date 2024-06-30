@@ -1,0 +1,2 @@
+type User = {}
+enum UserRoles{}
