@@ -3,6 +3,21 @@ import { createBrowserRouter, Route, Routes } from "react-router-dom"
 import Loader from "@/components/loader"
 
 export const router = createBrowserRouter([
+  // auth
+  {
+    path: "/sign-in",
+    lazy: async () => ({
+      Component: (await import("@/pages/auth/modules/sign-in")).default,
+    }),
+  },
+  {
+    path: "/sign-up",
+    lazy: async () => ({
+      Component: (await import("@/pages/auth/modules/sign-up")).default,
+    }),
+  },
+  {},
+  // auth end
   {
     path: "/",
     lazy: async () => {
