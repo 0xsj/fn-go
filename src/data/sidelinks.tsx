@@ -5,6 +5,9 @@ import {
   IconMessages,
   IconRouteAltLeft,
   IconTruck,
+  IconPaperclip,
+  IconSubtask,
+  IconLayoutKanban,
   IconUsers,
 } from "@tabler/icons-react"
 
@@ -32,28 +35,28 @@ export const sidelinks: SideLink[] = [
     title: "Employees",
     label: "9",
     href: "/employees",
-    icon: <IconMessages size={18} />,
+    icon: <IconUsers size={18} />,
     isActive: false,
   },
   {
     title: "Documents",
     label: "",
     href: "/documents",
-    icon: <IconUsers size={18} />,
+    icon: <IconPaperclip size={18} />,
     isActive: false,
   },
   {
     title: "Tasks",
     label: "",
     href: "/tasks",
-    icon: <IconChartHistogram size={18} />,
+    icon: <IconSubtask size={18} />,
     isActive: false,
   },
   {
     title: "Kanban",
     label: "",
     href: "/kanban",
-    icon: <IconChartHistogram size={18} />,
+    icon: <IconLayoutKanban size={18} />,
     isActive: false,
   },
 ]
