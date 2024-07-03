@@ -1,2 +1,0 @@
-type User = {}
-enum UserRoles{}

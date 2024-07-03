@@ -1,9 +1,9 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
-import { IconLoader2 } from "@tabler/icons-react"
+import { cn } from "@/lib/utils";
+import { IconLoader2 } from "@tabler/icons-react";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
@@ -33,15 +33,15 @@ const buttonVariants = cva(
       size: "default",
     },
   }
-)
+);
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  asChild?: boolean
-  loading?: boolean
-  leftSection?: JSX.Element
-  rightSection?: JSX.Element
+  asChild?: boolean;
+  loading?: boolean;
+  leftSection?: JSX.Element;
+  rightSection?: JSX.Element;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -60,7 +60,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const Comp = asChild ? Slot : "button"
+    const Comp = asChild ? Slot : "button";
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
@@ -79,10 +79,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <IconLoader2 className='ml-2 h-4 w-4 animate-spin' />
         )}
       </Comp>
-    )
+    );
   }
-)
-Button.displayName = "Button"
+);
+Button.displayName = "Button";
 
 // eslint-disable-next-line react-refresh/only-export-components
-export { Button, buttonVariants }
+export { Button, buttonVariants };

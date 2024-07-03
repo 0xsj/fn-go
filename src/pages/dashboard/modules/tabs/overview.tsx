@@ -1,4 +1,4 @@
-import { TabsContent } from "@/components/ui/tabs"
+import { TabsContent } from "@/components/ui/tabs";
 
 interface Props {}
 
@@ -9,5 +9,5 @@ export const OverviewTab: React.FC<Props> = () => {
         <h1>overview</h1>
       </div>
     </TabsContent>
-  )
-}
+  );
+};

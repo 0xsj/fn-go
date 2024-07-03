@@ -1,0 +1,212 @@
+openapi: 3.0.3
+info:
+  title: Employee Management API
+  description: API for managing employee applications, forms, and handbook information
+  version: 1.0.0
+paths:
+  /applications:
+    post:
+      summary: Submit a new application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationForm'
+      responses:
+        '200':
+          description: Application submitted successfully
+        '400':
+          description: Invalid request payload
+  /w4forms:
+    post:
+      summary: Submit a new W4 form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/W4Form'
+      responses:
+        '200':
+          description: W4 form submitted successfully
+        '400':
+          description: Invalid request payload
+components:
+  schemas:
+    BaseModel:
+      type: object
+      properties:
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+    SignatureObject:
+      type: object
+      properties:
+        svg:
+          type: string
+        type:
+          type: string
+    Schedule:
+      type: object
+      properties:
+        days:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  - lunch
+                  - dinner
+              remarks:
+                type: string
+    JobItem:
+      type: object
+      properties:
+        employer:
+          type: string
+        position:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+        remarks:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+    LegalItems:
+      type: object
+      properties:
+        field1:
+          type: boolean
+        explanation1:
+          type: string
+        field2:
+          type: boolean
+        explanation2:
+          type: string
+        field3:
+          type: boolean
+        explanation3:
+          type: string
+    ApplicationForm:
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - type: object
+          properties:
+            fullName:
+              type: string
+            position:
+              type: string
+            address:
+              $ref: '#/components/schemas/Address'
+            startDate:
+              type: string
+            salaryDesired:
+              type: string
+            contactInfo:
+              type: string
+            legalStatus:
+              type: boolean
+            dob:
+              type: string
+            schedule:
+              $ref: '#/components/schemas/Schedule'
+            workExperience:
+              type: array
+              items:
+                $ref: '#/components/schemas/JobItem'
+            other:
+              $ref: '#/components/schemas/LegalItems'
+            signature:
+              $ref: '#/components/schemas/SignatureObject'
+    W4Form:
+      allOf:
+        - $ref: '#/components/schemas/BaseUser'
+        - type: object
+          properties:
+            marital:
+              type: string
+              enum:
+                - single
+                - married
+            step3a:
+              type: number
+            step3b:
+              type: number
+            step3c:
+              type: number
+            step4a:
+              type: number
+            step4b:
+              type: number
+            step4c:
+              type: number
+            signature:
+              $ref: '#/components/schemas/SignatureObject'
+            entity:
+              $ref: '#/components/schemas/Entity'
+    Entity:
+      type: object
+      properties:
+        storeName:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+        employees:
+          type: array
+          items:
+            $ref: '#/components/schemas/Employee'
+    Employee:
+      allOf:
+        - $ref: '#/components/schemas/BaseUser'
+        - type: object
+          properties:
+            position:
+              type: string
+            social:
+              type: number
+            gender:
+              type: string
+            maritalStatus:
+              type: string
+              enum:
+                - single
+                - married
+    Handbook:
+      type: object
+      properties:
+        title:
+          type: string
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/HandbookSection'
+    HandbookSection:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        subsections:
+          type: array
+          items:
+            $ref: '#/components/schemas/HandbookSection'

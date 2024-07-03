@@ -9,18 +9,18 @@ import {
   IconSubtask,
   IconLayoutKanban,
   IconUsers,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 
 export interface NavLink {
-  title: string
-  label?: string
-  href: string
-  icon: JSX.Element
-  isActive: boolean
+  title: string;
+  label?: string;
+  href: string;
+  icon: JSX.Element;
+  isActive: boolean;
 }
 
 export interface SideLink extends NavLink {
-  sub?: NavLink[]
+  sub?: NavLink[];
 }
 
 export const sidelinks: SideLink[] = [
@@ -59,4 +59,4 @@ export const sidelinks: SideLink[] = [
     icon: <IconLayoutKanban size={18} />,
     isActive: false,
   },
-]
+];

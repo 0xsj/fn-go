@@ -1,15 +1,15 @@
-import { IconMoon, IconSun } from "@tabler/icons-react"
-import { useTheme } from "@/hooks/use-theme"
-import { Button } from "./button"
-import { useEffect } from "react"
+import { IconMoon, IconSun } from "@tabler/icons-react";
+import { useTheme } from "@/hooks/use-theme";
+import { Button } from "./button";
+import { useEffect } from "react";
 
 export const ThemeSwitch = () => {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
   useEffect(() => {
-    const themeColor = theme === "dark" ? "#020817" : "#fff"
-    const metaThemeColor = document.querySelector("meta[name='theme-color']")
-    metaThemeColor && metaThemeColor.setAttribute("content", themeColor)
-  }, [theme])
+    const themeColor = theme === "dark" ? "#020817" : "#fff";
+    const metaThemeColor = document.querySelector("meta[name='theme-color']");
+    metaThemeColor && metaThemeColor.setAttribute("content", themeColor);
+  }, [theme]);
 
   return (
     <Button
@@ -20,5 +20,5 @@ export const ThemeSwitch = () => {
     >
       <IconMoon />
     </Button>
-  )
-}
+  );
+};
