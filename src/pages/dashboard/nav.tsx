@@ -1,20 +1,20 @@
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/custom/button"
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/custom/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Link } from "react-router-dom"
+} from "@/components/ui/tooltip";
+import { Link } from "react-router-dom";
 
 interface NavProps {
-  isCollapsed: boolean
+  isCollapsed: boolean;
   links: {
-    title: string
-    label?: string
-    icon: string // LucideIcon
-    variant: "default" | "ghost"
-  }[]
+    title: string;
+    label?: string;
+    icon: string; // LucideIcon
+    variant: "default" | "ghost";
+  }[];
 }
 
 export function Nav({ links, isCollapsed }: NavProps) {
@@ -81,5 +81,5 @@ export function Nav({ links, isCollapsed }: NavProps) {
         )}
       </nav>
     </div>
-  )
+  );
 }

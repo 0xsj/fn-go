@@ -1,5 +1,5 @@
-import { Layout } from "@/components/custom/layout"
-import { useState } from "react"
+import { Layout } from "@/components/custom/layout";
+import { useState } from "react";
 
 interface Props {}
 
@@ -15,6 +15,6 @@ export const Employees: React.FC<Props> = () => {
         <div></div>
       </Layout.Body>
     </Layout>
-  )
-}
-export default Employees
+  );
+};
+export default Employees;

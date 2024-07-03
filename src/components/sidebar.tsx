@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react"
-import Nav from "./nav"
-import { IconChevronsLeft, IconMenu2, IconX } from "@tabler/icons-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/custom/button"
-import { sidelinks } from "@/data/sidelinks"
-import { Layout } from "./custom/layout"
+import React, { useEffect, useState } from "react";
+import Nav from "./nav";
+import { IconChevronsLeft, IconMenu2, IconX } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/custom/button";
+import { sidelinks } from "@/data/sidelinks";
+import { Layout } from "./custom/layout";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-  isCollapsed: boolean
-  setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>
+  isCollapsed: boolean;
+  setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -16,14 +16,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   setIsCollapsed,
 }) => {
-  const [navOpened, setNavOpened] = useState(false)
+  const [navOpened, setNavOpened] = useState(false);
   useEffect(() => {
     if (navOpened) {
-      document.body.classList.add("overflow-hidden")
+      document.body.classList.add("overflow-hidden");
     } else {
-      document.body.classList.remove("overflow-hidden")
+      document.body.classList.remove("overflow-hidden");
     }
-  }, [navOpened])
+  }, [navOpened]);
 
   return (
     <aside
@@ -118,5 +118,5 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </Button>
       </Layout>
     </aside>
-  )
-}
+  );
+};

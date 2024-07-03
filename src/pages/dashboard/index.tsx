@@ -1,14 +1,14 @@
-import { Button } from "@/components/custom/button"
-import { Layout } from "@/components/custom/layout"
-import { ThemeSwitch } from "@/components/custom/theme-switch"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UserNav } from "@/components/user-nav"
-import { OverviewTab } from "./modules/tabs/overview"
-import { ReportsTab } from "./modules/tabs/reports"
-import { NotificationTab } from "./modules/tabs/notifications"
-import { TasksTab } from "./modules/tabs/tasks"
-import { SearchBox } from "@/components/custom/search-box"
-import { HeaderNav } from "@/components/header-nav"
+import { Button } from "@/components/custom/button";
+import { Layout } from "@/components/custom/layout";
+import { ThemeSwitch } from "@/components/custom/theme-switch";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserNav } from "@/components/user-nav";
+import { OverviewTab } from "./modules/tabs/overview";
+import { ReportsTab } from "./modules/tabs/reports";
+import { NotificationTab } from "./modules/tabs/notifications";
+import { TasksTab } from "./modules/tabs/tasks";
+import { SearchBox } from "@/components/custom/search-box";
+import { HeaderNav } from "@/components/header-nav";
 
 export default function Dashboard() {
   return (
@@ -48,7 +48,7 @@ export default function Dashboard() {
         </Tabs>
       </Layout.Body>
     </Layout>
-  )
+  );
 }
 
 const navItems = [
@@ -62,4 +62,4 @@ const navItems = [
     href: "https://github.com/",
     isActive: true,
   },
-]
+];

@@ -4,33 +4,33 @@ import React, {
   useRef,
   useState,
   useContext,
-} from "react"
-import { cn } from "@/lib/utils"
+} from "react";
+import { cn } from "@/lib/utils";
 
 const LayoutContext = React.createContext<{
-  offset: number
-  fixed: boolean
-} | null>(null)
+  offset: number;
+  fixed: boolean;
+} | null>(null);
 
 interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
-  fixed?: boolean
+  fixed?: boolean;
 }
 
 const Layout = ({ className, fixed = false, ...props }: LayoutProps) => {
-  const divRef = useRef<HTMLDivElement>(null)
-  const [offset, setOffset] = useState(0)
+  const divRef = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState(0);
 
   useEffect(() => {
-    const div = divRef.current
+    const div = divRef.current;
 
-    if (!div) return
-    const onScroll = () => setOffset(div.scrollTop)
+    if (!div) return;
+    const onScroll = () => setOffset(div.scrollTop);
 
     // clean up code
-    div.removeEventListener("scroll", onScroll)
-    div.addEventListener("scroll", onScroll, { passive: true })
-    return () => div.removeEventListener("scroll", onScroll)
-  }, [])
+    div.removeEventListener("scroll", onScroll);
+    div.addEventListener("scroll", onScroll, { passive: true });
+    return () => div.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <LayoutContext.Provider value={{ offset, fixed }}>
@@ -45,21 +45,21 @@ const Layout = ({ className, fixed = false, ...props }: LayoutProps) => {
         {...props}
       />
     </LayoutContext.Provider>
-  )
-}
-Layout.displayName = "Layout"
+  );
+};
+Layout.displayName = "Layout";
 
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {
-  sticky?: boolean
+  sticky?: boolean;
 }
 
 const Header = forwardRef<HTMLDivElement, HeaderProps>(
   ({ className, sticky, ...props }, ref) => {
-    const contextVal = useContext(LayoutContext)
+    const contextVal = useContext(LayoutContext);
     if (contextVal === null) {
       throw new Error(
         `Layout.Header must be used within ${Layout.displayName}.`
-      )
+      );
     }
 
     return (
@@ -75,19 +75,19 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
         )}
         {...props}
       />
-    )
+    );
   }
-)
-Header.displayName = "Header"
+);
+Header.displayName = "Header";
 
 const Body = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   // Check if Layout.Body is used within Layout
-  const contextVal = useContext(LayoutContext)
+  const contextVal = useContext(LayoutContext);
   if (contextVal === null) {
-    throw new Error(`Layout.Body must be used within ${Layout.displayName}.`)
+    throw new Error(`Layout.Body must be used within ${Layout.displayName}.`);
   }
 
   return (
@@ -101,11 +101,11 @@ const Body = React.forwardRef<
       )}
       {...props}
     />
-  )
-})
-Body.displayName = "Body"
+  );
+});
+Body.displayName = "Body";
 
-Layout.Header = Header
-Layout.Body = Body
+Layout.Header = Header;
+Layout.Body = Body;
 
-export { Layout }
+export { Layout };

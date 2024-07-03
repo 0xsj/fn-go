@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar"
-import { Button } from "./custom/button"
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { Button } from "./custom/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu"
+} from "./ui/dropdown-menu";
 
 interface Props {}
 export const UserNav: React.FC<Props> = () => {
@@ -51,5 +51,5 @@ export const UserNav: React.FC<Props> = () => {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
-}
+  );
+};

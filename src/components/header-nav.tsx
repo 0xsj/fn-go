@@ -1,21 +1,21 @@
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "./custom/button"
-import { IconMenu } from "@tabler/icons-react"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dropdown-menu";
+import { Button } from "./custom/button";
+import { IconMenu } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
 
 type HrefLink = {
-  title: string
-  href: string
-  isActive: boolean
-}
+  title: string;
+  href: string;
+  isActive: boolean;
+};
 interface HeaderNavProps extends React.HTMLAttributes<HTMLElement> {
-  links: HrefLink[]
+  links: HrefLink[];
 }
 const HeaderNav: React.FC<HeaderNavProps> = ({
   className,
@@ -64,7 +64,7 @@ const HeaderNav: React.FC<HeaderNavProps> = ({
         ))}
       </nav>
     </>
-  )
-}
+  );
+};
 
-export { HeaderNav }
+export { HeaderNav };

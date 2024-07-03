@@ -1,6 +1,6 @@
-import { Suspense, lazy } from "react"
-import { createBrowserRouter, Route, Routes } from "react-router-dom"
-import Loader from "@/components/loader"
+import { Suspense, lazy } from "react";
+import { createBrowserRouter, Route, Routes } from "react-router-dom";
+import Loader from "@/components/loader";
 
 export const router = createBrowserRouter([
   // auth
@@ -21,8 +21,8 @@ export const router = createBrowserRouter([
   {
     path: "/",
     lazy: async () => {
-      const RootLayout = await import("./components/root-layout")
-      return { Component: RootLayout.default }
+      const RootLayout = await import("./components/root-layout");
+      return { Component: RootLayout.default };
     },
     children: [
       {
@@ -57,4 +57,4 @@ export const router = createBrowserRouter([
       },
     ],
   },
-])
+]);

@@ -1,5 +1,5 @@
-import { Input } from "@/components/ui/Input"
-import { cn } from "@/lib/utils"
+import { Input } from "@/components/ui/Input";
+import { cn } from "@/lib/utils";
 
 interface Props {}
 export const SearchBox: React.FC<Props> = () => {
@@ -11,5 +11,5 @@ export const SearchBox: React.FC<Props> = () => {
         className={cn(`md:w-[100px] lg:w-[300px]`)}
       />
     </div>
-  )
-}
+  );
+};
