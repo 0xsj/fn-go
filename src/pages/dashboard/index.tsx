@@ -11,46 +11,49 @@ import { SearchBox } from "@/components/custom/search-box";
 import { HeaderNav } from "@/components/header-nav";
 import TeamSwitcher from "./team-switch";
 import LocationSwitcher from "./location-switch";
+import { SwitchProvider } from "./modules/widget/overview/graph-date-switch";
 
 export default function Dashboard() {
   return (
     <Layout>
-      <Layout.Header sticky>
-        <TeamSwitcher />
-        <LocationSwitcher />
-        <HeaderNav links={navItems} />
-        <div className='ml-auto flex items-center space-x-4'>
-          <SearchBox />
-          <ThemeSwitch />
-          <UserNav />
-        </div>
-      </Layout.Header>
-      <Layout.Body>
-        <div className='mb-2 flex items-center justify-between space-y-2'>
-          <h1 className='text-2xl font-bold tracking-tight'>Overview</h1>
-          <div className='flex items-center space-x-2'>
-            <Button>Download</Button>
+      <SwitchProvider>
+        <Layout.Header sticky>
+          <TeamSwitcher />
+          <LocationSwitcher />
+          <HeaderNav links={navItems} />
+          <div className='ml-auto flex items-center space-x-4'>
+            <SearchBox />
+            <ThemeSwitch />
+            <UserNav />
           </div>
-        </div>
-        <Tabs
-          orientation='vertical'
-          defaultValue='overview'
-          className='space-y-4'
-        >
-          <div>
-            <TabsList>
-              <TabsTrigger value='overview'>Overview</TabsTrigger>
-              <TabsTrigger value='reports'>Reports</TabsTrigger>
-              <TabsTrigger value='tasks'>Tasks</TabsTrigger>
-              <TabsTrigger value='notifications'>Notifications</TabsTrigger>
-            </TabsList>
+        </Layout.Header>
+        <Layout.Body>
+          <div className='mb-2 flex items-center justify-between space-y-2'>
+            <h1 className='text-2xl font-bold tracking-tight'>Overview</h1>
+            <div className='flex items-center space-x-2'>
+              <Button>Download</Button>
+            </div>
           </div>
-          <OverviewTab />
-          <ReportsTab />
-          <NotificationTab />
-          <TasksTab />
-        </Tabs>
-      </Layout.Body>
+          <Tabs
+            orientation='vertical'
+            defaultValue='overview'
+            className='space-y-4'
+          >
+            <div>
+              <TabsList>
+                <TabsTrigger value='overview'>Overview</TabsTrigger>
+                <TabsTrigger value='reports'>Reports</TabsTrigger>
+                <TabsTrigger value='tasks'>Tasks</TabsTrigger>
+                <TabsTrigger value='notifications'>Notifications</TabsTrigger>
+              </TabsList>
+            </div>
+            <OverviewTab />
+            <ReportsTab />
+            <NotificationTab />
+            <TasksTab />
+          </Tabs>
+        </Layout.Body>
+      </SwitchProvider>
     </Layout>
   );
 }

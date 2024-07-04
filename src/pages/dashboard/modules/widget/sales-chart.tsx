@@ -6,7 +6,11 @@ interface SalesData {
   total: number;
 }
 
-export function SalesChart() {
+interface Props {
+  view?: unknown;
+}
+
+export const SalesChart: React.FC<Props> = ({ view }) => {
   const [viewMode, setViewMode] = useState<"monthly" | "weekly">("monthly");
   const [monthlyData, setMonthlyData] = useState<SalesData[]>([]);
   const [weeklyData, setWeeklyData] = useState<SalesData[]>([]);
@@ -53,14 +57,10 @@ export function SalesChart() {
     generateWeeklyData();
   }, []); // Run once on component mount to generate data
 
-  const data = viewMode === "monthly" ? monthlyData : weeklyData;
+  const data = view ? monthlyData : weeklyData;
 
   return (
     <div>
-      <div>
-        <button onClick={() => setViewMode("monthly")}>Monthly</button>
-        <button onClick={() => setViewMode("weekly")}>Weekly</button>
-      </div>
       <ResponsiveContainer width='100%' height={350}>
         <BarChart data={data}>
           <XAxis
@@ -87,4 +87,4 @@ export function SalesChart() {
       </ResponsiveContainer>
     </div>
   );
-}
+};

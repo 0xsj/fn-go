@@ -1,3 +1,4 @@
+import React, { useCallback, useState } from "react";
 import {
   Card,
   CardContent,
@@ -7,11 +8,17 @@ import {
 } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
 import { SalesChart } from "../widget/sales-chart";
-import { Button } from "@/components/custom/button";
+import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
+import {
+  GraphDataSwitch,
+  useSwitch,
+} from "../widget/overview/graph-date-switch";
 
 interface Props {}
-
+type Checked = DropdownMenuCheckboxItemProps["checked"];
 export const OverviewTab: React.FC<Props> = () => {
+  const { date, toggleDate } = useSwitch();
+
   return (
     <TabsContent value='overview' className='space-y-4'>
       <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
@@ -110,11 +117,12 @@ export const OverviewTab: React.FC<Props> = () => {
       </div>
       <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
         <Card className='col-span-1 lg:col-span-4'>
-          <CardHeader>
+          <CardHeader className='flex flex-row justify-between items-center'>
             <CardTitle>Sales</CardTitle>
+            <GraphDataSwitch />
           </CardHeader>
           <CardContent className='pl-2'>
-            <SalesChart />
+            <SalesChart view={date} />
           </CardContent>
         </Card>
         <Card className='col-span-1 lg:col-span-3'>
