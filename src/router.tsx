@@ -55,6 +55,12 @@ export const router = createBrowserRouter([
           Component: (await import("@/pages/kanban")).default,
         }),
       },
+      {
+        path: "apps",
+        lazy: async () => ({
+          Component: (await import("@/pages/apps")).default,
+        }),
+      },
     ],
   },
 ]);

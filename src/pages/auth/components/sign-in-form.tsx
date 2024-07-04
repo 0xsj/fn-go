@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/form";
 import React, { HtmlHTMLAttributes } from "react";
 import { PasswordInput } from "@/components/custom/password-input";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/custom/button";
 import { IconBrandFacebook, IconBrandGithub } from "@tabler/icons-react";

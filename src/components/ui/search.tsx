@@ -1,15 +1,13 @@
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
-interface Props {}
-export const SearchBox: React.FC<Props> = () => {
+export function Search() {
   return (
     <div>
       <Input
         type='search'
         placeholder='Search...'
-        className={cn(`md:w-[100px] lg:w-[300px]`)}
+        className='md:w-[100px] lg:w-[300px]'
       />
     </div>
   );
-};
+}
