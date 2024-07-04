@@ -13,10 +13,10 @@ import TeamSwitcher from "./team-switch";
 import LocationSwitcher from "./location-switch";
 import { SwitchProvider } from "./modules/widget/overview/graph-date-switch";
 import { LanguageSwitch } from "@/components/custom/language-switch";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
 export default function Dashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return (
     <Layout>
       <SwitchProvider>
@@ -34,7 +34,7 @@ export default function Dashboard() {
         <Layout.Body>
           <div className='mb-2 flex items-center justify-between space-y-2'>
             <h1 className='text-2xl font-bold tracking-tight'>
-              {t("welcome")}
+              <Trans i18nKey={"greeting"}>Welcome!</Trans>
             </h1>
             <div className='flex items-center space-x-2'>
               <Button>Download</Button>

@@ -11,6 +11,7 @@ import {
   IconUsers,
   IconApps,
 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 export interface NavLink {
   title: string;

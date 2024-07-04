@@ -3,8 +3,9 @@ import Nav from "./nav";
 import { IconChevronsLeft, IconMenu2, IconX } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/custom/button";
-import { sidelinks } from "@/data/sidelinks";
+import { SideLink, sidelinks } from "@/data/sidelinks";
 import { Layout } from "./custom/layout";
+import { useTranslation } from "react-i18next";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   isCollapsed: boolean;
@@ -16,6 +17,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   setIsCollapsed,
 }) => {
+  const { t } = useTranslation();
   const [navOpened, setNavOpened] = useState(false);
   useEffect(() => {
     if (navOpened) {
