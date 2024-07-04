@@ -6,6 +6,7 @@ import React, {
   useContext,
 } from "react";
 import { cn } from "@/lib/utils";
+import { TooltipProvider } from "../ui/tooltip";
 
 const LayoutContext = React.createContext<{
   offset: number;
@@ -34,16 +35,18 @@ const Layout = ({ className, fixed = false, ...props }: LayoutProps) => {
 
   return (
     <LayoutContext.Provider value={{ offset, fixed }}>
-      <div
-        ref={divRef}
-        data-layout='layout'
-        className={cn(
-          "h-full overflow-auto",
-          fixed && "flex flex-col",
-          className
-        )}
-        {...props}
-      />
+      <TooltipProvider>
+        <div
+          ref={divRef}
+          data-layout='layout'
+          className={cn(
+            "h-full overflow-auto",
+            fixed && "flex flex-col",
+            className
+          )}
+          {...props}
+        />
+      </TooltipProvider>
     </LayoutContext.Provider>
   );
 };
