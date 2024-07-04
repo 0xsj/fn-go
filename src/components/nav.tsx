@@ -23,6 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import useCheckActiveNav from "@/hooks/use-check-active-nav";
 import { SideLink } from "@/data/sidelinks";
+import { Trans, useTranslation } from "react-i18next";
 
 interface NavProps extends React.HTMLAttributes<HTMLDivElement> {
   isCollapsed: boolean;
@@ -37,6 +38,7 @@ export default function Nav({
   closeNav,
 }: NavProps) {
   const renderLink = ({ sub, ...rest }: SideLink) => {
+    const { t, i18n } = useTranslation();
     const key = `${rest.title}-${rest.href}`;
     if (isCollapsed && sub)
       return (
@@ -89,6 +91,7 @@ function NavLink({
   subLink = false,
 }: NavLinkProps) {
   const { checkActiveNav } = useCheckActiveNav();
+  const { t } = useTranslation();
   return (
     <Link
       to={href}
@@ -104,7 +107,9 @@ function NavLink({
       aria-current={checkActiveNav(href) ? "page" : undefined}
     >
       <div className='mr-2'>{icon}</div>
-      {title}
+      <Trans Trans i18nKey={`sidebar.${title.toLowerCase()}`}>
+        {title}
+      </Trans>
       {label && (
         <div className='ml-2 rounded-lg bg-primary px-1 text-[0.625rem] text-primary-foreground'>
           {label}

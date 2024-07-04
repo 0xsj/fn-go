@@ -9,7 +9,9 @@ import {
   IconSubtask,
   IconLayoutKanban,
   IconUsers,
+  IconApps,
 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 export interface NavLink {
   title: string;
@@ -46,17 +48,24 @@ export const sidelinks: SideLink[] = [
     isActive: false,
   },
   {
-    title: "Tasks",
+    title: "Apps",
     label: "",
-    href: "/tasks",
-    icon: <IconSubtask size={18} />,
+    href: "/apps",
+    icon: <IconApps size={18} />,
     isActive: false,
   },
-  {
-    title: "Kanban",
-    label: "",
-    href: "/kanban",
-    icon: <IconLayoutKanban size={18} />,
-    isActive: false,
-  },
+  // {
+  //   title: "Tasks",
+  //   label: "",
+  //   href: "/tasks",
+  //   icon: <IconSubtask size={18} />,
+  //   isActive: false,
+  // },
+  // {
+  //   title: "Kanban",
+  //   label: "",
+  //   href: "/kanban",
+  //   icon: <IconLayoutKanban size={18} />,
+  //   isActive: false,
+  // },
 ];

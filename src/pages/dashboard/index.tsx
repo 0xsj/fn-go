@@ -12,8 +12,11 @@ import { HeaderNav } from "@/components/header-nav";
 import TeamSwitcher from "./team-switch";
 import LocationSwitcher from "./location-switch";
 import { SwitchProvider } from "./modules/widget/overview/graph-date-switch";
+import { LanguageSwitch } from "@/components/custom/language-switch";
+import { Trans, useTranslation } from "react-i18next";
 
 export default function Dashboard() {
+  const { t, i18n } = useTranslation();
   return (
     <Layout>
       <SwitchProvider>
@@ -25,11 +28,14 @@ export default function Dashboard() {
             <SearchBox />
             <ThemeSwitch />
             <UserNav />
+            <LanguageSwitch />
           </div>
         </Layout.Header>
         <Layout.Body>
           <div className='mb-2 flex items-center justify-between space-y-2'>
-            <h1 className='text-2xl font-bold tracking-tight'>Overview</h1>
+            <h1 className='text-2xl font-bold tracking-tight'>
+              <Trans i18nKey={"greeting"}>Welcome!</Trans>
+            </h1>
             <div className='flex items-center space-x-2'>
               <Button>Download</Button>
             </div>

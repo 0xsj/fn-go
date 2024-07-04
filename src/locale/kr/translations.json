@@ -1,0 +1,21 @@
+{
+  "greeting": "환영합니다 👋",
+  "download": "다운로드",
+  "export": "내보내기",
+  "reports": "보고서",
+  "tasks": "작업",
+  "notifications": "알림",
+  "overview": "개요",
+  "wiki": "위키",
+  "search": "검색",
+  "sales": "매출",
+  "employees": "직원",
+  "week": "주",
+  "month": "달",
+  "sidebar": {
+    "overview": "개요",
+    "employees": "직원",
+    "documents": "문서",
+    "apps": "앱"
+  }
+}

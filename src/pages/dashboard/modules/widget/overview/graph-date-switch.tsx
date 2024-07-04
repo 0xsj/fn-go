@@ -37,11 +37,11 @@ export const SwitchProvider: React.FC<Props> = ({ children }) => {
 // Modify the GraphDataSwitch component to use the context
 export const GraphDataSwitch: React.FC = () => {
   const { date, toggleDate } = useSwitch();
-
+  const switchLabel = date ? "month" : "week";
   return (
     <div className='flex items-center space-x-2'>
       <Switch id='date' checked={date} onCheckedChange={toggleDate} />
-      <Label htmlFor='date'>View</Label>
+      <Label htmlFor='date'>{switchLabel}</Label>
     </div>
   );
 };
