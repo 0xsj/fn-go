@@ -30,3 +30,20 @@
 #   ## Contributors
 
 #   Including changes from $CONTRIBUTORS
+
+
+# name: release-drafter
+# on:
+#   push:
+#     branches:
+#       - main
+#   workflow_dispatch: {}
+
+# jobs:
+#   draft-release:
+#     name: "Draft release"
+#     runs-on: unbuntu-latest
+#     steps:
+#       - uses: release-drafter/release-drafter@v6
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

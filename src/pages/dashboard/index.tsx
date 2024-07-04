@@ -9,11 +9,15 @@ import { NotificationTab } from "./modules/tabs/notifications";
 import { TasksTab } from "./modules/tabs/tasks";
 import { SearchBox } from "@/components/custom/search-box";
 import { HeaderNav } from "@/components/header-nav";
+import TeamSwitcher from "./team-switch";
+import LocationSwitcher from "./location-switch";
 
 export default function Dashboard() {
   return (
     <Layout>
       <Layout.Header sticky>
+        <TeamSwitcher />
+        <LocationSwitcher />
         <HeaderNav links={navItems} />
         <div className='ml-auto flex items-center space-x-4'>
           <SearchBox />
@@ -58,8 +62,8 @@ const navItems = [
     isActive: true,
   },
   {
-    title: "Github",
+    title: "Wiki",
     href: "https://github.com/",
-    isActive: true,
+    isActive: false,
   },
 ];
