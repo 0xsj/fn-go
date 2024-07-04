@@ -1,17 +1,18 @@
 // Base Types
-type BaseModel = {
+export type BaseModel = {
+  id: string;
   createdAt: string;
   updatedAt: string;
 };
 
-type BaseUser = BaseModel & {
+export type BaseUser = BaseModel & {
   name: string;
   address: Address;
   email: string;
   phone: string;
 };
 
-type Address = {
+export type Address = {
   street: string;
   city: string;
   state: string;
@@ -19,13 +20,13 @@ type Address = {
   country?: string; // Optional country field
 };
 
-type SignatureObject = {
+export type SignatureObject = {
   svg: string; // Assuming SVG string for signature
   type?: string; // Optional type field for future formats
 };
 
 // Application Form Model
-type ApplicationForm = BaseModel & {
+export type ApplicationForm = BaseModel & {
   fullName: string; // first, last - fillable
   position: string; // could be an enum - fillable
   address: Address; // fillable
@@ -40,7 +41,7 @@ type ApplicationForm = BaseModel & {
   signature: SignatureObject; // fillable - User's signature
 };
 
-type Schedule = {
+export type Schedule = {
   days: {
     [key: string]: {
       type: ScheduleType;
@@ -49,7 +50,7 @@ type Schedule = {
   };
 };
 
-type JobItem = {
+export type JobItem = {
   employer: string; // name of the employer - fillable
   position: string; // previous position - fillable
   address: Address; // fillable
@@ -58,7 +59,7 @@ type JobItem = {
   endDate: string; // fillable
 };
 
-type LegalItems = {
+export type LegalItems = {
   field1: boolean; // if yes, explain - fillable
   explanation1?: string; // explanation for field1 - fillable if field1 is true
   field2: boolean; // if yes, explain - fillable
@@ -67,13 +68,13 @@ type LegalItems = {
   explanation3?: string; // explanation for field3 - fillable if field3 is true
 };
 
-enum ScheduleType {
+export enum ScheduleType {
   LUNCH = "lunch",
   DINNER = "dinner",
 }
 
 // W4 Form Model
-type W4Form = BaseUser & {
+export type W4Form = BaseUser & {
   marital: MaritalStatus; // fillable enum
   step3a: number; // algorithmically calculated
   step3b: number; // algorithmically calculated
@@ -85,31 +86,39 @@ type W4Form = BaseUser & {
   entity: Entity; // store entity information
 };
 
-type Entity = {
+export type Entity = {
   storeName: string;
   address: Address;
   employees: Employee[];
 };
 
-type Employee = BaseUser & {
+export type Employee = BaseUser & {
   position: string;
   social: number;
   gender: string;
   maritalStatus: MaritalStatus;
 };
 
-type Handbook = BaseModel & {
+export type Handbook = BaseModel & {
   title: string;
   sections: HandbookSection[];
 };
 
-type HandbookSection = {
+export type HandbookSection = {
   title: string;
   content: string;
   subsections?: HandbookSection[];
 };
 
-enum MaritalStatus {
+export enum MaritalStatus {
   SINGLE = "single",
   MARRIED = "married",
+}
+
+export enum JobPosition {
+  MANAGER = "manager",
+  SERVER = "server",
+  CHEF = "chef",
+  BACKLINE = "backline",
+  FOH = "foh",
 }

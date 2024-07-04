@@ -6,13 +6,17 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "@/index.css";
 import i18n from "@/i18n";
 import { I18nextProvider } from "react-i18next";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <I18nextProvider i18n={i18n}>
-      <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </QueryClientProvider>
     </I18nextProvider>
   </React.StrictMode>
 );
