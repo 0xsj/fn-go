@@ -1,4 +1,4 @@
-export const mockData = [
+export const users = [
   {
     uuidv4: "b07cbef8-40a4-4560-a6cd-1e95e53e62bd",
     fistName: "Maria",

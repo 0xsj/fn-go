@@ -2,7 +2,11 @@ import * as React from "react";
 import { SortAscIcon, CheckIcon, PlusCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/custom/avatar";
 import { Button } from "@/components/custom/button";
 import {
   Command,

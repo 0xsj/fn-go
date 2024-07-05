@@ -78,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div
               className={`flex flex-col justify-end truncate ${isCollapsed ? "invisible w-0" : "visible w-auto"}`}
             >
-              <span className='font-medium'>Console</span>
+              <span className='font-medium'>MOA CONSOLE</span>
               <span className='text-xs'></span>
             </div>
           </div>

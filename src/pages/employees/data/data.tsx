@@ -7,7 +7,9 @@ import {
   CrossCircledIcon,
   QuestionMarkCircledIcon,
   StopwatchIcon,
+  ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
+// import { IconExclamationCircle } from "@tabler/icons-react";
 
 export const labels = [
   {
@@ -67,5 +69,28 @@ export const priorities = [
     label: "High",
     value: "high",
     icon: ArrowUpIcon,
+  },
+];
+
+export const applicationStatus = [
+  {
+    label: "done",
+    value: "done",
+    icon: CheckCircledIcon,
+  },
+  {
+    label: "in progress",
+    value: "in progress",
+    icon: StopwatchIcon,
+  },
+  {
+    value: "canceled",
+    label: "Canceled",
+    icon: CrossCircledIcon,
+  },
+  {
+    value: "needs attention",
+    label: "needs attention",
+    icon: ExclamationTriangleIcon,
   },
 ];

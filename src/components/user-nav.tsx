@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./custom/avatar";
 import { Button } from "./custom/button";
 import {
   DropdownMenu,

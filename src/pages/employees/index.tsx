@@ -2,7 +2,7 @@ import { fetchUsers } from "@/api/getUsers";
 import { buttonVariants } from "@/components/custom/button";
 import { Layout } from "@/components/custom/layout";
 import { Separator } from "@/components/ui/separator";
-import { mockData } from "@/data/data";
+// import { mockData } from "@/data/data";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Heading } from "@/components/custom/heading";
@@ -17,18 +17,15 @@ import { Trans, useTranslation } from "react-i18next";
 import { DataTable } from "./modules/data-table";
 import { columns } from "./modules/columns";
 import { tasks } from "./data/tasks";
+import { users } from "./data/users";
 
 interface Props {}
 
 export const Employees: React.FC<Props> = () => {
-  const data = mockData;
-  const taskData = tasks;
-  const page = 0;
-  const pageLimit = 5;
-  const country = "";
-  const offSet = 0;
-  const totalUsers = mockData.length / 2;
+  const totalUsers = 100;
   const { t, i18n } = useTranslation();
+  console.log(users);
+
   return (
     <Layout>
       <Layout.Header>
@@ -54,7 +51,7 @@ export const Employees: React.FC<Props> = () => {
           </div>
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0'>
-          <DataTable data={taskData} columns={columns} />
+          <DataTable data={users} columns={columns} />
         </div>
       </Layout.Body>
     </Layout>
