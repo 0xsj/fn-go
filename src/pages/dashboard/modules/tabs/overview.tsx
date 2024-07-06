@@ -8,11 +8,23 @@ import {
 } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
 import { SalesChart } from "../widget/sales-chart";
+import {
+  EmployeeCountLineChart,
+  DashedEmployeeCountChart,
+  EmployeeTipsChart,
+} from "../widget/charts/line/";
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import {
   GraphDataSwitch,
   useSwitch,
 } from "../widget/overview/graph-date-switch";
+import { AreaChartFillByValue } from "../widget/charts/area/area-by-fill";
+import { ChefServerRatioChart } from "../widget/charts/area/percent";
+import { EmployeeShiftPerformanceChart } from "../widget/charts/area/simple";
+import MixinBarChart from "../widget/charts/bar/mixin-bar";
+import EmployeeDemographicsChart from "../widget/charts/pie/two-level";
+import EmployeePerformanceChart from "../widget/charts/scatter/multiple-yaxes";
+import { EmployeePerformanceRadarChart } from "../widget/charts/radar/simple-radar";
 
 interface Props {}
 type Checked = DropdownMenuCheckboxItemProps["checked"];
@@ -123,6 +135,16 @@ export const OverviewTab: React.FC<Props> = () => {
           </CardHeader>
           <CardContent className='pl-2'>
             <SalesChart view={date} />
+            <EmployeeCountLineChart />
+            <DashedEmployeeCountChart />
+            <AreaChartFillByValue />
+            <ChefServerRatioChart />
+            <EmployeeShiftPerformanceChart />
+            <MixinBarChart />
+            <EmployeeTipsChart />
+            <EmployeeDemographicsChart />
+            <EmployeePerformanceChart />
+            <EmployeePerformanceRadarChart />
           </CardContent>
         </Card>
         <Card className='col-span-1 lg:col-span-3'>
