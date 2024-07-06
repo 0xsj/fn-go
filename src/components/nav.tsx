@@ -20,7 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 import useCheckActiveNav from "@/hooks/use-check-active-nav";
 import { SideLink } from "@/data/sidelinks";
 import { Trans, useTranslation } from "react-i18next";

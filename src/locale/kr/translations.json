@@ -7,7 +7,7 @@
   "notifications": "알림",
   "overview": "개요",
   "wiki": "위키",
-  "search": "검색",
+  "search": "검색 ...",
   "sales": "매출",
   "employees": "직원",
   "week": "주",
@@ -17,5 +17,22 @@
     "employees": "직원",
     "documents": "문서",
     "apps": "앱"
-  }
+  },
+  "uuidv4": "ID",
+  "firstName": "이름",
+  "lastName": "성",
+  "maritalStatus": "결혼 상태",
+  "phone": "전화번호",
+  "email": "이메일",
+  "ssn": "주민등록번호",
+  "DOB": "생년월일",
+  "street": "거리",
+  "street2": "거리2",
+  "city": "도시",
+  "state": "주",
+  "zip": "우편번호",
+  "company": "회사",
+  "title": "직책",
+  "datedCreated": "생성 날짜",
+  "dateModified": "수정 날짜"
 }
