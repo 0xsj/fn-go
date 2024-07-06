@@ -26,7 +26,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Popover,
@@ -167,7 +167,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
           <div className='space-y-4 py-2 pb-4'>
             <div className='space-y-2'>
               <Label htmlFor='name'>Team name</Label>
-              <Input id='name' placeholder='Acme Inc.' />
+              {/* <Input id='name' placeholder='Acme Inc.' /> */}
             </div>
             <div className='space-y-2'>
               <Label htmlFor='plan'>Subscription plan</Label>

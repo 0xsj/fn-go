@@ -2,7 +2,6 @@ import { Cross2Icon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/custom/button";
-import { Input } from "@/components/ui/input";
 import { DataTableViewOptions } from "./data-table-view-options";
 
 import { priorities, statuses } from "../data/data";
