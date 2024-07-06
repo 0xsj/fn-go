@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/custom/button";
 import { IconBrandFacebook, IconBrandGithub } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/util/utils";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";

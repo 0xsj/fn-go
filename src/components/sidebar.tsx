@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Nav from "./nav";
 import { IconChevronsLeft, IconMenu2, IconX } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 import { Button } from "@/components/custom/button";
 import { SideLink, sidelinks } from "@/data/sidelinks";
 import { Layout } from "./custom/layout";

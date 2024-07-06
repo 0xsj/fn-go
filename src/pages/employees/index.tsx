@@ -1,12 +1,4 @@
-import { fetchUsers } from "@/api/getUsers";
-import { buttonVariants } from "@/components/custom/button";
 import { Layout } from "@/components/custom/layout";
-import { Separator } from "@/components/ui/separator";
-// import { mockData } from "@/data/data";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { Heading } from "@/components/custom/heading";
-import { Plus } from "lucide-react";
 import TeamSwitcher from "../dashboard/team-switch";
 import LocationSwitcher from "../dashboard/location-switch";
 import { SearchBox } from "@/components/custom/search-box";
@@ -16,7 +8,7 @@ import { LanguageSwitch } from "@/components/custom/language-switch";
 import { Trans, useTranslation } from "react-i18next";
 import { DataTable } from "./modules/data-table";
 import { columns } from "./modules/columns";
-import { tasks } from "./data/tasks";
+
 import { users } from "./data/users";
 
 interface Props {}
