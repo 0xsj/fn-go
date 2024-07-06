@@ -22,7 +22,7 @@ import { AreaChartFillByValue } from "../widget/charts/area/area-by-fill";
 import { ChefServerRatioChart } from "../widget/charts/area/percent";
 import { EmployeeShiftPerformanceChart } from "../widget/charts/area/simple";
 import MixinBarChart from "../widget/charts/bar/mixin-bar";
-import EmployeeDemographicsChart from "../widget/charts/pie/two-level";
+import { EmployeeDemographicsChart } from "../widget/charts/pie/two-level";
 import EmployeePerformanceChart from "../widget/charts/scatter/multiple-yaxes";
 import { EmployeePerformanceRadarChart } from "../widget/charts/radar/simple-radar";
 
