@@ -1,3 +1,4 @@
+import { Status } from "@/lib/team-context-provider";
 import {
   ArrowDownIcon,
   ArrowRightIcon,
@@ -28,28 +29,28 @@ export const labels = [
 
 export const statuses = [
   {
-    value: "backlog",
-    label: "Backlog",
+    value: "ACTIVE",
+    label: "ACTIVE",
     icon: QuestionMarkCircledIcon,
   },
   {
-    value: "todo",
-    label: "Todo",
+    value: "PENDING",
+    label: "PENDING",
     icon: CircleIcon,
   },
   {
-    value: "in progress",
-    label: "In Progress",
+    value: "APPROVED",
+    label: "APPROVED",
     icon: StopwatchIcon,
   },
   {
-    value: "done",
-    label: "Done",
-    icon: CheckCircledIcon,
+    value: "REJECTED",
+    label: "REJECTED",
+    icon: CrossCircledIcon,
   },
   {
-    value: "canceled",
-    label: "Canceled",
+    value: "FLAGGED",
+    label: "FLAGGED",
     icon: CrossCircledIcon,
   },
 ];

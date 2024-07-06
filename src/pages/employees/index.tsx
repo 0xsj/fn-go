@@ -8,13 +8,15 @@ import { LanguageSwitch } from "@/components/custom/language-switch";
 import { Trans, useTranslation } from "react-i18next";
 import { DataTable } from "./modules/data-table";
 import { columns } from "./modules/columns";
+import { useMockContext } from "@/lib/team-context-provider";
+import { employees } from "@/data/data";
 
 interface Props {}
 
 export const Employees: React.FC<Props> = () => {
-  const totalUsers = 100;
+  const totalUsers = employees.length;
   const { t, i18n } = useTranslation();
-
+  const { mockData, updatedMockData } = useMockContext();
   return (
     <Layout>
       <Layout.Header>
@@ -40,7 +42,7 @@ export const Employees: React.FC<Props> = () => {
           </div>
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0'>
-          {/* <DataTable data={users} columns={columns} /> */}
+          <DataTable data={employees} columns={columns} />
         </div>
       </Layout.Body>
     </Layout>

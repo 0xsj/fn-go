@@ -91,17 +91,17 @@ export function DataTableFacetedFilter<TData, TValue>({
                 return (
                   <CommandItem
                     key={option.value}
-                    onSelect={() => {
-                      if (isSelected) {
-                        selectedValues.delete(option.value);
-                      } else {
-                        selectedValues.add(option.value);
-                      }
-                      const filterValues = Array.from(selectedValues);
-                      column?.setFilterValue(
-                        filterValues.length ? filterValues : undefined
-                      );
-                    }}
+                    // onSelect={() => {
+                    //   if (isSelected) {
+                    //     selectedValues.delete(option.value);
+                    //   } else {
+                    //     selectedValues.add(option.value);
+                    //   }
+                    //   const filterValues = Array.from(selectedValues);
+                    //   column?.setFilterValue(
+                    //     filterValues.length ? filterValues : undefined
+                    //   );
+                    // }}
                   >
                     <div
                       className={cn(

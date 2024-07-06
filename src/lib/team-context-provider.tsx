@@ -1,4 +1,3 @@
-// MockContext.js
 import React, {
   createContext,
   useState,
@@ -16,23 +15,17 @@ import {
   brands,
 } from "@/data/data";
 
-// Assuming you have already defined Status and other interfaces
-
-// Define context type
 interface MockContextType {
   mockData: MockData;
   updatedMockData: (upDatedData: MockData) => void;
 }
 
-// Create context
 const MockContext = createContext<MockContextType | undefined>(undefined);
 
-// Provider props interface
 interface ProviderProps {
   children: ReactNode;
 }
 
-// MockProvider component
 export const MockProvider: React.FC<ProviderProps> = ({ children }) => {
   const initialMockData: MockData = {
     entities: entities,
@@ -42,6 +35,7 @@ export const MockProvider: React.FC<ProviderProps> = ({ children }) => {
       bcd: bcd,
       yardHouse: yardHouse,
     },
+    employees: employees,
   };
 
   const [mockData, setMockData] = useState<MockData>(initialMockData);
@@ -57,9 +51,8 @@ export const MockProvider: React.FC<ProviderProps> = ({ children }) => {
   );
 };
 
-// Custom hook to use the mock context
 // eslint-disable-next-line react-refresh/only-export-components
-export const useMockContext = () => {
+export const useMockContext = (): MockContextType => {
   const context = useContext(MockContext);
   if (!context) {
     throw new Error("useMockContext must be used within a MockProvider");
@@ -221,4 +214,5 @@ export interface MockData {
     bcd: Location[];
     yardHouse: Location[];
   };
+  employees: Employee[];
 }

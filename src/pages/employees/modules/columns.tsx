@@ -2,8 +2,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
+import { Employee } from "@/lib/team-context-provider";
 
-export const columns: ColumnDef<any>[] = [
+export const columns: ColumnDef<Employee>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -29,20 +30,99 @@ export const columns: ColumnDef<any>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "uuidv4",
+    accessorKey: "uid",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='uuid4v' />
+      <DataTableColumnHeader column={column} title='uid' />
     ),
-    cell: ({ row }) => <div className='w-[80px]'>{row.getValue("uuidv4")}</div>,
+    cell: ({ row }) => <div className='w-[80px]'>{row.getValue("uid")}</div>,
     enableSorting: false,
     enableHiding: false,
   },
-  // {
-  //   accessorKey: "",
-  //   header({column}) => (
-  //     // <DataTableColumnHeader column={null} title =
-  //   )
-  // }
+  {
+    accessorKey: "firstName",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='firstName' />
+    ),
+    cell: ({ row }) => (
+      <div className='w-[80px]'>{row.getValue("firstName")}</div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "lastName",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='lastName' />
+    ),
+    cell: ({ row }) => (
+      <div className='w-[80px]'>{row.getValue("lastName")}</div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "gender",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='gender' />
+    ),
+    cell: ({ row }) => <div className='w-[80px]'>{row.getValue("gender")}</div>,
+    enableSorting: false,
+    enableHiding: false,
+  },
+
+  {
+    accessorKey: "position",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='position' />
+    ),
+    cell: ({ row }) => (
+      <div className='w-[80px]'>{row.getValue("position")}</div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "documents",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='documents' />
+    ),
+    cell: ({ row }) => (
+      <div className='w-[80px]'>{row.getValue("documents")}</div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='status' />
+    ),
+    cell: ({ row }) => <div className='w-[80px]'>{row.getValue("status")}</div>,
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='createdAt' />
+    ),
+    cell: ({ row }) => (
+      <div className='w-[80px]'>{row.getValue("createdAt")}</div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "modifiedAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='modifiedAt' />
+    ),
+    cell: ({ row }) => (
+      <div className='w-[80px]'>{row.getValue("modifiedAt")}</div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
 
   // {
   //   accessorKey: "title",
