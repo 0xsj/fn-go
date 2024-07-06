@@ -9,14 +9,11 @@ import { Trans, useTranslation } from "react-i18next";
 import { DataTable } from "./modules/data-table";
 import { columns } from "./modules/columns";
 
-import { users } from "./data/users";
-
 interface Props {}
 
 export const Employees: React.FC<Props> = () => {
   const totalUsers = 100;
   const { t, i18n } = useTranslation();
-  console.log(users);
 
   return (
     <Layout>
@@ -43,7 +40,7 @@ export const Employees: React.FC<Props> = () => {
           </div>
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0'>
-          <DataTable data={users} columns={columns} />
+          {/* <DataTable data={users} columns={columns} /> */}
         </div>
       </Layout.Body>
     </Layout>

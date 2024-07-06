@@ -29,9 +29,22 @@ CREATE TABLE "Brand" (
   "name" varchar,
   "url" varchar,
   "contact" varchar,
-  "employees" varchar,
   "status" Status,
   "remarks" varchar,
+  "createdAt" timestamp,
+  "modifiedAt" timestamp DEFAULT (now())
+);
+
+CREATE TABLE "Location" (
+  "lid" varchar PRIMARY KEY,
+  "bid" varchar,
+  "name" varchar,
+  "address" varchar,
+  "city" varchar,
+  "state" varchar,
+  "zip" varchar,
+  "contact" varchar,
+  "employees" varchar,
   "createdAt" timestamp,
   "modifiedAt" timestamp DEFAULT (now())
 );
@@ -130,7 +143,11 @@ ALTER TABLE "Entity" ADD FOREIGN KEY ("eid") REFERENCES "Brand" ("eid");
 
 ALTER TABLE "Brand" ADD FOREIGN KEY ("contact") REFERENCES "Contact" ("cid");
 
-ALTER TABLE "Brand" ADD FOREIGN KEY ("employees") REFERENCES "Employee" ("uid");
+ALTER TABLE "Brand" ADD FOREIGN KEY ("bid") REFERENCES "Location" ("bid");
+
+ALTER TABLE "Location" ADD FOREIGN KEY ("contact") REFERENCES "Contact" ("cid");
+
+ALTER TABLE "Location" ADD FOREIGN KEY ("employees") REFERENCES "Employee" ("uid");
 
 ALTER TABLE "Brand" ADD FOREIGN KEY ("bid") REFERENCES "Employee" ("bid");
 

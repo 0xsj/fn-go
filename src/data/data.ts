@@ -1,4 +1,6 @@
-export const brands = [
+import { Brand, Employee, Entity, Location } from "@/lib/team-context-provider";
+
+export const brands: Brand[] = [
   {
     bid: "B1",
     eid: "E1",
@@ -34,14 +36,14 @@ export const brands = [
   },
 ];
 
-export const entities = [
+export const entities: Entity[] = [
   {
     eid: "E1",
     name: "Modu Management",
     url: "http://www.modumanagement.com",
     contact: "C1",
     employees: [],
-    brands: ["B1"],
+    brands: [],
     remarks: "Handles management operations",
     createdAt: "2024-07-05T10:00:00Z",
     modifiedAt: "2024-07-05T10:00:00Z",
@@ -52,7 +54,7 @@ export const entities = [
     url: "http://www.modutrading.com",
     contact: "C2",
     employees: [],
-    brands: ["B2"],
+    brands: [],
     remarks: "Engaged in trading activities",
     createdAt: "2024-07-05T10:00:00Z",
     modifiedAt: "2024-07-05T10:00:00Z",
@@ -63,14 +65,14 @@ export const entities = [
     url: "http://www.modufoods.com",
     contact: "C3",
     employees: [],
-    brands: ["B3"],
+    brands: [],
     remarks: "Deals with food-related products",
     createdAt: "2024-07-05T10:00:00Z",
     modifiedAt: "2024-07-05T10:00:00Z",
   },
 ];
 
-export const bcd = [
+export const bcd: Location[] = [
   {
     lid: "L11",
     bid: "B2",
@@ -138,7 +140,7 @@ export const bcd = [
   },
 ];
 
-export const kopan = [
+export const kopan: Location[] = [
   {
     lid: "L1",
     bid: "B1",
@@ -271,7 +273,7 @@ export const kopan = [
   },
 ];
 
-export const yardHouse = [
+export const yardHouse: Location[] = [
   {
     lid: "L16",
     bid: "B3",
@@ -352,7 +354,7 @@ export const yardHouse = [
   },
 ];
 
-export const employees = [
+export const employees: Employee[] = [
   {
     uid: "U1",
     bid: "B1",
@@ -367,7 +369,7 @@ export const employees = [
     documents: ["D1", "D2"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U2",
@@ -383,7 +385,7 @@ export const employees = [
     documents: ["D3", "D4"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U3",
@@ -399,7 +401,7 @@ export const employees = [
     documents: ["D5", "D6"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U4",
@@ -415,7 +417,7 @@ export const employees = [
     documents: ["D7", "D8"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U5",
@@ -431,7 +433,7 @@ export const employees = [
     documents: ["D9", "D10"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U6",
@@ -447,7 +449,7 @@ export const employees = [
     documents: ["D11", "D12"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U7",
@@ -463,7 +465,7 @@ export const employees = [
     documents: ["D13", "D14"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U8",
@@ -479,7 +481,7 @@ export const employees = [
     documents: ["D15", "D16"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U9",
@@ -495,7 +497,7 @@ export const employees = [
     documents: ["D17", "D18"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U10",
@@ -511,7 +513,7 @@ export const employees = [
     documents: ["D19", "D20"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U11",
@@ -527,7 +529,7 @@ export const employees = [
     documents: ["D21", "D22"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U12",
@@ -543,7 +545,7 @@ export const employees = [
     documents: ["D23", "D24"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U13",
@@ -559,7 +561,7 @@ export const employees = [
     documents: ["D25", "D26"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U14",
@@ -575,7 +577,7 @@ export const employees = [
     documents: ["D27", "D28"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U15",
@@ -591,7 +593,7 @@ export const employees = [
     documents: ["D29", "D30"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U16",
@@ -607,7 +609,7 @@ export const employees = [
     documents: ["D31", "D32"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U17",
@@ -623,7 +625,7 @@ export const employees = [
     documents: ["D33", "D34"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U18",
@@ -639,7 +641,7 @@ export const employees = [
     documents: ["D35", "D36"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U19",
@@ -655,7 +657,7 @@ export const employees = [
     documents: ["D37", "D38"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U20",
@@ -671,7 +673,7 @@ export const employees = [
     documents: ["D39", "D40"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U21",
@@ -687,7 +689,7 @@ export const employees = [
     documents: ["D41", "D42"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U22",
@@ -703,7 +705,7 @@ export const employees = [
     documents: ["D43", "D44"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U23",
@@ -719,7 +721,7 @@ export const employees = [
     documents: ["D45", "D46"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U24",
@@ -735,7 +737,7 @@ export const employees = [
     documents: ["D47", "D48"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U25",
@@ -751,7 +753,7 @@ export const employees = [
     documents: ["D49", "D50"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U26",
@@ -767,7 +769,7 @@ export const employees = [
     documents: ["D51", "D52"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U27",
@@ -783,7 +785,7 @@ export const employees = [
     documents: ["D53", "D54"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U28",
@@ -799,7 +801,7 @@ export const employees = [
     documents: ["D55", "D56"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U29",
@@ -815,7 +817,7 @@ export const employees = [
     documents: ["D57", "D58"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
   {
     uid: "U30",
@@ -831,6 +833,6 @@ export const employees = [
     documents: ["D59", "D60"],
     accounts: [],
     createdAt: "2024-07-05T10:00:00Z",
-    updatedAt: "2024-07-05T10:00:00Z",
+    modifiedAt: "2024-07-05T10:00:00Z",
   },
 ];
