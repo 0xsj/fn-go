@@ -1,1 +1,0 @@
-import{j as r}from"./index-Bvuik8sh.js";import{L as s}from"./layout-D9dI7FAm.js";import"./index-CiLDlUfB.js";const d=()=>r.jsxs(s,{children:[r.jsx(s.Header,{children:r.jsx("div",{children:r.jsx("h1",{children:"Logo"})})}),r.jsx(s.Body,{children:r.jsx("div",{})})]});export{d as Tasks,d as default};
