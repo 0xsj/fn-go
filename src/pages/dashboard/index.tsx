@@ -10,7 +10,7 @@ import { TasksTab } from "./modules/tabs/tasks";
 import { SearchBox } from "@/components/custom/search-box";
 import { HeaderNav } from "@/components/header-nav";
 import TeamSwitcher from "./team-switch";
-import LocationSwitcher from "./location-switch";
+
 import { SwitchProvider } from "./modules/widget/overview/graph-date-switch";
 import { LanguageSwitch } from "@/components/custom/language-switch";
 import { Trans, useTranslation } from "react-i18next";
@@ -21,8 +21,8 @@ export default function Dashboard() {
     <Layout>
       <SwitchProvider>
         <Layout.Header sticky>
-          <TeamSwitcher />
-          <LocationSwitcher />
+          {/* <TeamSwitcher /> */}
+          {/* <LocationSwitcher /> */}
           <HeaderNav links={navItems} />
           <div className='ml-auto flex items-center space-x-4'>
             <SearchBox />
@@ -49,8 +49,8 @@ export default function Dashboard() {
               <TabsList>
                 <TabsTrigger value='overview'>Overview</TabsTrigger>
                 <TabsTrigger value='reports'>Reports</TabsTrigger>
-                <TabsTrigger value='tasks'>Tasks</TabsTrigger>
-                <TabsTrigger value='notifications'>Notifications</TabsTrigger>
+                {/* <TabsTrigger value='tasks'>Tasks</TabsTrigger>
+                <TabsTrigger value='notifications'>Notifications</TabsTrigger> */}
               </TabsList>
             </div>
             <OverviewTab />
