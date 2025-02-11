@@ -1,1 +1,0 @@
-import{j as n}from"./index-DejjGbKT.js";const r=()=>n.jsx(n.Fragment,{children:n.jsx("div",{})});function s(){return n.jsx(n.Fragment,{children:n.jsxs("div",{children:[n.jsx("h1",{children:"Sign Up"}),n.jsx(r,{})]})})}export{s as default};
