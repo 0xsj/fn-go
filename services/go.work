@@ -8,4 +8,5 @@ use (
     ./notification
     ./users
     ./entities
+    ./chat
 )
