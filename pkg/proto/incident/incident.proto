@@ -1,0 +1,69 @@
+// pkg/proto/incident/incident.proto
+syntax = "proto3";
+
+package incident;
+option go_package = "github.com/0xsj/fn-go/pkg/proto/incident";
+
+import "google/protobuf/timestamp.proto";
+
+service IncidentService {
+  rpc CreateIncident(CreateIncidentRequest) returns (CreateIncidentResponse);
+  rpc GetIncident(GetIncidentRequest) returns (GetIncidentResponse);
+  rpc UpdateIncident(UpdateIncidentRequest) returns (UpdateIncidentResponse);
+  rpc ListIncidents(ListIncidentsRequest) returns (ListIncidentsResponse);
+}
+
+message Incident {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string address_id = 4;
+  string type = 5;
+  string status = 6;
+  string created_by = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message CreateIncidentRequest {
+  string title = 1;
+  string description = 2;
+  string address_id = 3;
+  string type = 4;
+  string created_by = 5;
+}
+
+message CreateIncidentResponse {
+  Incident incident = 1;
+}
+
+message GetIncidentRequest {
+  string id = 1;
+}
+
+message GetIncidentResponse {
+  Incident incident = 1;
+}
+
+message UpdateIncidentRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string status = 4;
+}
+
+message UpdateIncidentResponse {
+  Incident incident = 1;
+}
+
+message ListIncidentsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3;
+  string type = 4;
+}
+
+message ListIncidentsResponse {
+  repeated Incident incidents = 1;
+  int32 total = 2;
+}

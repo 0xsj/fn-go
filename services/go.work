@@ -9,4 +9,5 @@ use (
     ./users
     ./entities
     ./chat
+    ../pkg
 )
