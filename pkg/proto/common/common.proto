@@ -1,0 +1,21 @@
+// pkg/proto/common/common.proto
+syntax = "proto3";
+
+package common;
+option go_package = "github.com/0xsj/fn-go/pkg/proto/common";
+
+message Error {
+  int32 code = 1;
+  string message = 2;
+}
+
+message Pagination {
+  int32 page = 1;
+  int32 page_size = 2;
+  int32 total = 3;
+}
+
+message Status {
+    bool success = 1;
+    Error error = 2;
+}
