@@ -1,32 +1,30 @@
-// pkg/common/database/mysql.go
-
 package database
 
 import (
 	"fmt"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
-type MySQLConfig struct {
+type PostgresConfig struct {
 	Host         string
 	Port         int
 	User         string
 	Password     string
 	DatabaseName string
-	Params       string
+	SSLMode      string
 	MaxOpenConns int
 	MaxIdleConns int
 	MaxLifetime  time.Duration
 }
 
-func NewMySQLConnection(cfg MySQLConfig) (*sqlx.DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s",
-		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DatabaseName, cfg.Params)
+func NewPostgresConnection(cfg PostgresConfig) (*sqlx.DB, error) {
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DatabaseName, cfg.SSLMode)
 	
-	db, err := sqlx.Connect("mysql", dsn)
+	db, err := sqlx.Connect("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}
