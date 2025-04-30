@@ -12,6 +12,7 @@ type Notification struct {
 	Message          string          `json:"message"`
 	Type             string          `json:"type,omitempty"`
 	RecipientID      string          `json:"recipientId,omitempty"`
+	DeviceToken      string          `json:"deviceToken,omitempty"` 
 	IncidentID       string          `json:"incidentId,omitempty"`
 	MessageID        string          `json:"messageId,omitempty"`
 	Status           string          `json:"status,omitempty"` 

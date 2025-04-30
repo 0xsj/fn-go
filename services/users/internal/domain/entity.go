@@ -9,28 +9,32 @@ type User struct {
 	Phone        string     `json:"phone,omitempty"`
 	FirstName    string     `json:"firstName"`
 	LastName     string     `json:"lastName"`
-	Password     string     `json:"-"` 
+	Password     string     `json:"-"`
 	AvatarID     string     `json:"avatarId,omitempty"`
 	AlertEmail   string     `json:"alertEmail,omitempty"`
 	VacationMode bool       `json:"vacationMode"`
 	EmailAlerts  bool       `json:"emailAlerts"`
+	TempAuthToken string    `json:"tempAuthToken,omitempty"`
 	ArchivedAt   *time.Time `json:"archivedAt,omitempty"`
 	LastLoginAt  *time.Time `json:"lastLoginAt,omitempty"`
+	FirstLoginAt *time.Time `json:"firstLoginAt,omitempty"`
 	CreatedAt    time.Time  `json:"createdAt"`
 	UpdatedAt    time.Time  `json:"updatedAt"`
 }
 
 type UserDevice struct {
-	ID          string    `json:"id"`
-	UserID      string    `json:"userId"`
-	DeviceToken string    `json:"deviceToken"`
-	DeviceType  string    `json:"deviceType"`
-	DeviceID    string    `json:"deviceId"`
-	AppVersion  string    `json:"appVersion,omitempty"`
-	Enabled     bool      `json:"enabled"`
-	LastUsedAt  time.Time `json:"lastUsedAt"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	ID           string    `json:"id"`
+	UserID       string    `json:"userId"`
+	DeviceToken  string    `json:"deviceToken"` 
+	DeviceType   string    `json:"deviceType"`  
+	DeviceID     string    `json:"deviceId"`    
+	DeviceName   string    `json:"deviceName,omitempty"`
+	AppVersion   string    `json:"appVersion,omitempty"`
+	OSVersion    string    `json:"osVersion,omitempty"`
+	Enabled      bool      `json:"enabled"`
+	LastActiveAt time.Time `json:"lastActiveAt"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
 type UserSetting struct {
