@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package address;
+option go_package = "github.com/0xsj/fn-go/pkg/proto/address";
+
+import "google/protobuf/timestamp.proto";
+
+// AddressService handles address operations
+service AddressService {
+  // GetAddress retrieves an address by ID
+  rpc GetAddress(GetAddressRequest) returns (GetAddressResponse);
+  
+  // ValidateAddress validates an address format
+  rpc ValidateAddress(ValidateAddressRequest) returns (ValidateAddressResponse);
+  
+  // GeocodeAddress retrieves geographic coordinates for an address
+  rpc GeocodeAddress(GeocodeAddressRequest) returns (GeocodeAddressResponse);
+}
+
+// Address represents a physical address
+message Address {
+  string id = 1;
+  string street = 2;
+  string city = 3;
+  string state = 4;
+  string zip_code = 5;
+  string country = 6;
+  double latitude = 7;
+  double longitude = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message GetAddressRequest {
+  string id = 1;
+}
+
+message GetAddressResponse {
+  Address address = 1;
+}
+
+message ValidateAddressRequest {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string zip_code = 4;
+  string country = 5;
+}
+
+message ValidateAddressResponse {
+  bool valid = 1;
+  string message = 2;
+}
+
+message GeocodeAddressRequest {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string zip_code = 4;
+  string country = 5;
+}
+
+message GeocodeAddressResponse {
+  double latitude = 1;
+  double longitude = 2;
+  bool success = 3;
+  string message = 4;
+}

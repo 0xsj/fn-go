@@ -1,0 +1,13 @@
+go 1.24.2
+
+use (
+    ./address
+    ./auth
+    ./gateway
+    ./incident
+    ./notification
+    ./users
+    ./entities
+    ./chat
+    ../pkg
+)
