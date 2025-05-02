@@ -1,3 +1,4 @@
+// services/gateway/cmd/server/main.go
 package main
 
 import (
@@ -8,14 +9,10 @@ import (
 
 	"github.com/0xsj/fn-go/pkg/common/logging"
 	"github.com/0xsj/fn-go/pkg/proto/users"
+	"github.com/0xsj/fn-go/services/gateway/internal/handler"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
-
-type Gateway struct {
-	userClient users.UserServiceClient
-	logger	logging.Logger
-}
 
 func main() {
     port := 8000
@@ -33,9 +30,12 @@ func main() {
     baseLogger := logging.NewSimpleLogger(logging.InfoLevel)
     serviceLogger := baseLogger.With(logging.F("service", "gateway"))
     serviceLogger.Info("Starting API gateway")
-
     serviceLogger.Info("Connecting to users service", logging.F("address", usersServiceAddress))
-    userConn, err := grpc.Dial(usersServiceAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+    userConn, err := grpc.NewClient(
+        usersServiceAddress,
+        grpc.WithTransportCredentials(insecure.NewCredentials()),
+    )
     if err != nil {
         serviceLogger.Fatal("Failed to connect to users service", logging.F("error", err))
     }
@@ -43,17 +43,10 @@ func main() {
 
     userClient := users.NewUserServiceClient(userConn)
 
-    // Create gateway
-    gateway := &Gateway{
-        userClient: userClient,
-        logger:     serviceLogger,
-    }
+    userHandler := handler.NewUserHandler(userClient, serviceLogger)
 
-    // Set up HTTP handlers
-    http.HandleFunc("/users", gateway.handleUsers)
-    http.HandleFunc("/users/", gateway.handleUserByID)
-
-    // Start the server
+    http.HandleFunc("/users", userHandler.HandleUsers)
+    http.HandleFunc("/users/", userHandler.HandleUserByID)
     addr := fmt.Sprintf(":%d", port)
     serviceLogger.Info("Gateway listening", logging.F("address", addr))
     if err := http.ListenAndServe(addr, nil); err != nil {
