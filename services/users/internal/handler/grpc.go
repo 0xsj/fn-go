@@ -1,8 +1,7 @@
 package handler
 
 import (
-	"log"
-
+	"github.com/0xsj/fn-go/pkg/common/logging"
 	"github.com/0xsj/fn-go/pkg/proto/users"
 	"github.com/0xsj/fn-go/services/users/internal/config"
 )
@@ -10,10 +9,10 @@ import (
 type UserServiceHandler struct {
 	users.UnimplementedUserServiceServer
 	cfg *config.Config
-	logger *log.Logger
+	logger logging.Logger
 }
 
-func NewServiceHandler(cfg *config.Config, logger *log.Logger) *UserServiceHandler {
+func NewUserServiceHandler(cfg *config.Config, logger logging.Logger) *UserServiceHandler {
 	return &UserServiceHandler{
 		cfg: cfg,
 		logger: logger,
