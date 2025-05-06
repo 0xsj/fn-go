@@ -2,6 +2,8 @@ package log
 
 import (
 	"io"
+	"os"
+	"sync"
 	"time"
 )
 
@@ -94,4 +96,36 @@ type Config struct {
 	ServiceName string
 	// Environment is the deployment environment
 	Environment string
+}
+
+func DefaultConfig() Config {
+    return Config{
+        Level:         InfoLevel,
+        Format:        TextFormat,
+        EnableTime:    true,
+        EnableCaller:  true,
+        DisableColors: false,
+        CallerSkip:    3,    
+        CallerDepth:   10,   
+        Writer:        os.Stdout,
+        ServiceName:   "service",
+        Environment:   "development",
+    }
+}
+
+type StandardLogger struct {
+	config Config
+	fields map[string]interface{}
+	layer  string
+	trace  bool
+	timers map[string]*Timer
+	mu     sync.Mutex 
+}
+
+type Timer struct {
+	Name      string
+	StartTime time.Time
+	EndTime   time.Time
+	Duration  time.Duration
+	logger    *StandardLogger
 }
