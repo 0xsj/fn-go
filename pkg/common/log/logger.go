@@ -1,6 +1,9 @@
 package log
 
-import "time"
+import (
+	"io"
+	"time"
+)
 
 type LogLevel int
 
@@ -46,25 +49,49 @@ const (
 )
 
 type Logger interface {
-	Debug(args ...interface{})
-	Debugf(format string, args ...interface{})
-	Info(args ...interface{})
-	Infof(format string, args ...interface{})
-	Warn(args ...interface{})
-	Warnf(format string, args ...interface{})
-	Error(args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatal(args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Panic(args ...interface{})
-	Panicf(format string, args ...interface{})
+	Debug(args ...any)
+	Debugf(format string, args ...any)
+	Info(args ...any)
+	Infof(format string, args ...any)
+	Warn(args ...any)
+	Warnf(format string, args ...any)
+	Error(args ...any)
+	Errorf(format string, args ...any)
+	Fatal(args ...any)
+	Fatalf(format string, args ...any)
+	Panic(args ...any)
+	Panicf(format string, args ...any)
 	
-	With(key string, value interface{}) Logger
-	WithFields(fields map[string]interface{}) Logger
+	With(key string, value any) Logger
+	WithFields(fields map[string]any) Logger
 	WithLayer(layer string) Logger
 	WithStackTrace() Logger
 	
 	Timer(name string) time.Timer
 	TimerStart(name string) 
 	TimerStop(name string)
+}
+
+
+type Config struct {
+	// Level is the minimum log level to output
+	Level LogLevel
+	// Format specifies the output format (text or json)
+	Format LogFormat
+	// EnableTime includes timestamps in log output
+	EnableTime bool
+	// EnableCaller includes caller information in log output
+	EnableCaller bool
+	// DisableColors turns off colored output (for text format)
+	DisableColors bool
+	// CallerSkip is the number of stack frames to skip when reporting caller
+	CallerSkip int
+	// CallerDepth is the number of stack frames to include in stack traces
+	CallerDepth int
+	// Writer is the output destination for logs
+	Writer io.Writer
+	// ServiceName is the name of the service for logs
+	ServiceName string
+	// Environment is the deployment environment
+	Environment string
 }
