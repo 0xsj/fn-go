@@ -54,7 +54,7 @@ func (p *EnvProvider) formatKey(key string) string {
 	return fmt.Sprintf("%s_%s", p.prefix, key)
 }
 
-func LoadJsonFile(filepath string, cfg interface{}) error {
+func LoadJsonFile(filepath string, cfg any) error {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return err
