@@ -1,18 +1,41 @@
-.PHONY: proto docker up down test
+# Makefile (extend your existing one)
 
-proto:
-	protoc --go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-		pkg/proto/*/*.proto
-
-docker:
+# Docker build commands
+.PHONY: docker-build
+docker-build:
 	docker-compose build
 
-up:
+.PHONY: docker-up
+docker-up:
 	docker-compose up -d
 
-down:
+.PHONY: docker-down
+docker-down:
 	docker-compose down
 
+# Kubernetes commands
+.PHONY: k8s-apply
+k8s-apply:
+	kubectl apply -f infra/kubernetes/
+
+.PHONY: k8s-delete
+k8s-delete:
+	kubectl delete -f infra/kubernetes/
+
+# Local development
+.PHONY: run-local
+run-local:
+	nats-server & \
+	cd services/user-service && go run main.go & \
+	cd gateway && go run main.go
+
+# Testing
+.PHONY: test
 test:
 	go test ./...
+
+# Clean
+.PHONY: clean
+clean:
+	go clean
+	docker-compose down -v

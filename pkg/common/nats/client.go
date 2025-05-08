@@ -2,6 +2,7 @@
 package nats
 
 import (
+	"os"
 	"sync"
 	"time"
 
@@ -39,12 +40,17 @@ type Config struct {
 
 // DefaultConfig provides default NATS configuration
 func DefaultConfig() Config {
-	return Config{
-		URLs:          []string{natspkg.DefaultURL},
-		MaxReconnect:  10,
-		ReconnectWait: 2 * time.Second,
-		Timeout:       5 * time.Second,
-	}
+    natsURL := os.Getenv("NATS_URL")
+    if natsURL == "" {
+        natsURL = natspkg.DefaultURL 
+    }
+    
+    return Config{
+        URLs:          []string{natsURL},
+        MaxReconnect:  10,
+        ReconnectWait: 2 * time.Second,
+        Timeout:       5 * time.Second,
+    }
 }
 
 // NewClient creates a new NATS client
