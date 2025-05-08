@@ -3,6 +3,11 @@ go 1.24.3
 use (
 	./gateway
 	./pkg
-	// ./monitoring-service
+	./services/auth-service
+	./services/entity-service
+	./services/incident-service
+	./services/location-service
+	./services/monitoring-service
+	./services/notification-service
 	./services/user-service
 )

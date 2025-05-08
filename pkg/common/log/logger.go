@@ -167,9 +167,7 @@ func (l *StandardLogger) With(key string, value any) Logger {
         timers: make(map[string]*Timer),
     }
     
-    for k, v := range l.fields {
-        newLogger.fields[k] = v
-    }
+    maps.Copy(newLogger.fields, l.fields)
     
     newLogger.fields[key] = value
     
