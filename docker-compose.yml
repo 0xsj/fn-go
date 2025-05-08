@@ -5,6 +5,60 @@ services:
       - "4222:4222"
       - "8222:8222"
 
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    environment:
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - nats
+
+  entity-service:
+    build:
+      context: .
+      dockerfile: services/entity-service/Dockerfile
+    environment:
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - nats
+
+  incident-service:
+    build:
+      context: .
+      dockerfile: services/incident-service/Dockerfile
+    environment:
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - nats
+
+  location-service:
+    build:
+      context: .
+      dockerfile: services/location-service/Dockerfile
+    environment:
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - nats
+
+  monitoring-service:
+    build:
+      context: .
+      dockerfile: services/monitoring-service/Dockerfile
+    environment:
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - nats
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    environment:
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - nats
+
   user-service:
     build:
       context: .
@@ -24,4 +78,10 @@ services:
       - NATS_URL=nats://nats:4222
     depends_on:
       - nats
+      - auth-service
+      - entity-service
+      - incident-service
+      - location-service
+      - monitoring-service
+      - notification-service
       - user-service
