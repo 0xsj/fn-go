@@ -1,0 +1,8 @@
+# infra/k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fn-go-config
+  namespace: fn-go
+data:
+  LOG_LEVEL: "info"
