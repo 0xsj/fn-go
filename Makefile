@@ -1,5 +1,3 @@
-# Makefile (extend your existing one)
-
 # Docker build commands
 .PHONY: docker-build
 docker-build:
