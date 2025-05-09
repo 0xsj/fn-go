@@ -1,21 +1,17 @@
-// pkg/repository/options.go
 package repository
 
-// QueryOptions contains parameters for filtering, sorting, and pagination
 type QueryOptions struct {
-	Filters map[string]interface{}
-	Sort    []SortOption
-	Limit   int
-	Offset  int
+	Filters  map[string]any
+	Sort     []SortOption
+	Limit    int
+	Offset   int
 }
 
-// SortOption represents a field to sort by and its direction
 type SortOption struct {
 	Field     string
 	Direction SortDirection
 }
 
-// SortDirection indicates ascending or descending sort
 type SortDirection int
 
 const (
@@ -23,10 +19,8 @@ const (
 	SortDescending
 )
 
-// QueryOption is a function that modifies QueryOptions
 type QueryOption func(*QueryOptions)
 
-// WithFilter adds a filter condition
 func WithFilter(field string, value interface{}) QueryOption {
 	return func(opts *QueryOptions) {
 		if opts.Filters == nil {
@@ -51,7 +45,10 @@ func WithFilters(filters map[string]interface{}) QueryOption {
 // WithSort adds a sort condition
 func WithSort(field string, direction SortDirection) QueryOption {
 	return func(opts *QueryOptions) {
-		opts.Sort = append(opts.Sort, SortOption{Field: field, Direction: direction})
+		opts.Sort = append(opts.Sort, SortOption{
+			Field:     field,
+			Direction: direction,
+		})
 	}
 }
 
@@ -63,7 +60,7 @@ func WithPagination(limit, offset int) QueryOption {
 	}
 }
 
-// ApplyOptions applies the provided query options
+// ApplyOptions applies all query options
 func ApplyOptions(opts ...QueryOption) QueryOptions {
 	options := QueryOptions{}
 	for _, opt := range opts {
