@@ -3,10 +3,10 @@ package sql
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 
+	"github.com/0xsj/fn-go/pkg/common/db"
 	"github.com/0xsj/fn-go/pkg/common/log"
 	"github.com/0xsj/fn-go/pkg/repository"
 )
@@ -14,12 +14,12 @@ import (
 // SQLRepository provides a SQL implementation of Repository
 type SQLRepository[T repository.Entity] struct {
 	repository.BaseRepository
-	db        *sql.DB
+	db        db.DB
 	tableName string
 	
 	// Mapping functions
-	scanRow    func(*sql.Row) (T, error)
-	scanRows   func(*sql.Rows) ([]T, error)
+	scanRow    func(db.Row) (T, error)
+	scanRows   func(db.Rows) ([]T, error)
 	toColumns  func(T) ([]string, []interface{})
 	fromEntity func(T) map[string]interface{}
 }
@@ -30,14 +30,14 @@ type SQLRepositoryOption[T repository.Entity] func(*SQLRepository[T])
 // NewSQLRepository creates a new SQL repository
 func NewSQLRepository[T repository.Entity](
 	logger log.Logger,
-	db *sql.DB,
+	database db.DB,
 	entityName string,
 	tableName string,
 	options ...SQLRepositoryOption[T],
 ) *SQLRepository[T] {
 	repo := &SQLRepository[T]{
 		BaseRepository: repository.NewBaseRepository(logger, entityName),
-		db:             db,
+		db:             database,
 		tableName:      tableName,
 	}
 	
@@ -49,14 +49,14 @@ func NewSQLRepository[T repository.Entity](
 }
 
 // WithScanRow sets the function to scan a row into an entity
-func WithScanRow[T repository.Entity](fn func(*sql.Row) (T, error)) SQLRepositoryOption[T] {
+func WithScanRow[T repository.Entity](fn func(db.Row) (T, error)) SQLRepositoryOption[T] {
 	return func(repo *SQLRepository[T]) {
 		repo.scanRow = fn
 	}
 }
 
 // WithScanRows sets the function to scan rows into entities
-func WithScanRows[T repository.Entity](fn func(*sql.Rows) ([]T, error)) SQLRepositoryOption[T] {
+func WithScanRows[T repository.Entity](fn func(db.Rows) ([]T, error)) SQLRepositoryOption[T] {
 	return func(repo *SQLRepository[T]) {
 		repo.scanRows = fn
 	}
@@ -82,17 +82,12 @@ func (r *SQLRepository[T]) FindByID(ctx context.Context, id string) (T, error) {
 	logger.Debug("Looking up entity by ID")
 	
 	query := fmt.Sprintf("SELECT * FROM %s WHERE id = ? LIMIT 1", r.tableName)
-	
-	var row *sql.Row
-	if tx, ok := GetTxFromContext(ctx); ok {
-		row = tx.QueryRowContext(ctx, query, id)
-	} else {
-		row = r.db.QueryRowContext(ctx, query, id)
-	}
+	row := r.db.QueryRow(ctx, query, id)
 	
 	entity, err := r.scanRow(row)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		// Check for no rows error
+		if strings.Contains(err.Error(), "no rows") {
 			logger.Debug("Entity not found")
 			var zero T
 			return zero, r.NotFoundError(id)
@@ -149,14 +144,7 @@ func (r *SQLRepository[T]) FindAll(ctx context.Context, opts ...repository.Query
 		}
 	}
 	
-	var rows *sql.Rows
-	var err error
-	if tx, ok := GetTxFromContext(ctx); ok {
-		rows, err = tx.QueryContext(ctx, query, args...)
-	} else {
-		rows, err = r.db.QueryContext(ctx, query, args...)
-	}
-	
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		logger.With("error", err.Error()).Error("Database error during query")
 		return nil, r.DatabaseError("FindAll", err)
@@ -194,14 +182,9 @@ func (r *SQLRepository[T]) Count(ctx context.Context, opts ...repository.QueryOp
 	}
 	
 	var count int64
-	var err error
+	row := r.db.QueryRow(ctx, query, args...)
 	
-	if tx, ok := GetTxFromContext(ctx); ok {
-		err = tx.QueryRowContext(ctx, query, args...).Scan(&count)
-	} else {
-		err = r.db.QueryRowContext(ctx, query, args...).Scan(&count)
-	}
-	
+	err := row.Scan(&count)
 	if err != nil {
 		logger.With("error", err.Error()).Error("Database error during count")
 		return 0, r.DatabaseError("Count", err)
@@ -237,15 +220,9 @@ func (r *SQLRepository[T]) Create(ctx context.Context, entity T) error {
 		strings.Join(placeholders, ", "),
 	)
 	
-	var err error
-	if tx, ok := GetTxFromContext(ctx); ok {
-		_, err = tx.ExecContext(ctx, query, values...)
-	} else {
-		_, err = r.db.ExecContext(ctx, query, values...)
-	}
-	
+	_, err := r.db.Execute(ctx, query, values...)
 	if err != nil {
-		// Check for duplicate key errors (this would need to be adapted to your DB)
+		// Check for duplicate key errors
 		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "UNIQUE constraint") {
 			logger.With("error", err.Error()).Warn("Entity already exists")
 			return r.ConflictError(id)
@@ -292,24 +269,10 @@ func (r *SQLRepository[T]) Update(ctx context.Context, entity T) error {
 		strings.Join(setClauses, ", "),
 	)
 	
-	var result sql.Result
-	var err error
-	
-	if tx, ok := GetTxFromContext(ctx); ok {
-		result, err = tx.ExecContext(ctx, query, args...)
-	} else {
-		result, err = r.db.ExecContext(ctx, query, args...)
-	}
-	
+	rowsAffected, err := r.db.Execute(ctx, query, args...)
 	if err != nil {
 		logger.With("error", err.Error()).Error("Database error during update")
 		return r.DatabaseError("Update", err)
-	}
-	
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		logger.With("error", err.Error()).Error("Error checking rows affected")
-		return r.DatabaseError("Update.RowsAffected", err)
 	}
 	
 	if rowsAffected == 0 {
@@ -328,24 +291,10 @@ func (r *SQLRepository[T]) Delete(ctx context.Context, id string) error {
 	
 	query := fmt.Sprintf("DELETE FROM %s WHERE id = ?", r.tableName)
 	
-	var result sql.Result
-	var err error
-	
-	if tx, ok := GetTxFromContext(ctx); ok {
-		result, err = tx.ExecContext(ctx, query, id)
-	} else {
-		result, err = r.db.ExecContext(ctx, query, id)
-	}
-	
+	rowsAffected, err := r.db.Execute(ctx, query, id)
 	if err != nil {
 		logger.With("error", err.Error()).Error("Database error during delete")
 		return r.DatabaseError("Delete", err)
-	}
-	
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		logger.With("error", err.Error()).Error("Error checking rows affected")
-		return r.DatabaseError("Delete.RowsAffected", err)
 	}
 	
 	if rowsAffected == 0 {
@@ -360,45 +309,9 @@ func (r *SQLRepository[T]) Delete(ctx context.Context, id string) error {
 // Transaction executes the provided function within a transaction
 func (r *SQLRepository[T]) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
 	logger := r.LogOperation(ctx, "Transaction")
-	logger.Debug("Beginning transaction")
+	logger.Debug("Executing transaction")
 	
-	// Check if we're already in a transaction
-	if _, ok := GetTxFromContext(ctx); ok {
-		logger.Debug("Already in transaction, executing function")
-		return fn(ctx)
-	}
-	
-	// Start a new transaction
-	tx, err := r.db.BeginTx(ctx, nil)
-	if err != nil {
-		logger.With("error", err.Error()).Error("Failed to begin transaction")
-		return r.DatabaseError("BeginTransaction", err)
-	}
-	
-	// Create a context with the transaction
-	txCtx := context.WithValue(ctx, txKey, tx)
-	
-	// Execute the function
-	logger.Debug("Executing transaction function")
-	err = fn(txCtx)
-	
-	// Handle the result
-	if err != nil {
-		logger.With("error", err.Error()).Error("Transaction failed, rolling back")
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			logger.With("error", rollbackErr.Error()).Error("Failed to rollback transaction")
-			return fmt.Errorf("rollback error: %v (original error: %v)", rollbackErr, err)
-		}
-		return err
-	}
-	
-	// Commit the transaction
-	logger.Debug("Transaction successful, committing")
-	if err := tx.Commit(); err != nil {
-		logger.With("error", err.Error()).Error("Failed to commit transaction")
-		return r.DatabaseError("CommitTransaction", err)
-	}
-	
-	logger.Info("Transaction completed successfully")
-	return nil
+	return r.db.WithTransaction(ctx, func(txCtx context.Context, _ db.Transaction) error {
+		return fn(txCtx)
+	})
 }
