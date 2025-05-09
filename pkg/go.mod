@@ -8,6 +8,7 @@ require filippo.io/edwards25519 v1.1.0 // indirect
 
 require (
 	github.com/go-sql-driver/mysql v1.9.2
+	github.com/google/uuid v1.6.0
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/nats-io/nkeys v0.4.11 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
