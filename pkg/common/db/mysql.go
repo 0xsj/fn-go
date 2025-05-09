@@ -6,54 +6,24 @@ import (
 	"database/sql"
 	"fmt"
 	"sync"
-	"time"
 
-	"github.com/0xsj/fn-go/pkg/common/config"
+	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/0xsj/fn-go/pkg/common/errors"
 	"github.com/0xsj/fn-go/pkg/common/log"
-	_ "github.com/go-sql-driver/mysql" // MySQL driver
 )
 
-// MySQLConfig holds MySQL connection configuration
 type MySQLConfig struct {
-	Host            string
-	Port            int
-	Username        string
-	Password        string
-	Database        string
-	MaxOpenConns    int
-	MaxIdleConns    int
-	ConnMaxLifetime time.Duration
-	ConnMaxIdleTime time.Duration
+	DatabaseConfig
+	ParseTime bool
+	Charset   string
 }
 
-// DefaultMySQLConfig returns default MySQL configuration
 func DefaultMySQLConfig() MySQLConfig {
 	return MySQLConfig{
-		Host:            "localhost",
-		Port:            3306,
-		Username:        "root",
-		Password:        "",
-		Database:        "app",
-		MaxOpenConns:    25,
-		MaxIdleConns:    10,
-		ConnMaxLifetime: 5 * time.Minute,
-		ConnMaxIdleTime: 5 * time.Minute,
-	}
-}
-
-// LoadMySQLConfigFromEnv loads MySQL configuration from environment
-func LoadMySQLConfigFromEnv(provider config.Provider) MySQLConfig {
-	return MySQLConfig{
-		Host:            provider.Get("DB_HOST"),
-		Port:            provider.GetInt("DB_PORT"),
-		Username:        provider.Get("DB_USER"),
-		Password:        provider.Get("DB_PASSWORD"),
-		Database:        provider.Get("DB_NAME"),
-		MaxOpenConns:    provider.GetInt("DB_MAX_OPEN_CONNS"),
-		MaxIdleConns:    provider.GetInt("DB_MAX_IDLE_CONNS"),
-		ConnMaxLifetime: time.Duration(provider.GetInt("DB_CONN_MAX_LIFETIME")) * time.Second,
-		ConnMaxIdleTime: time.Duration(provider.GetInt("DB_CONN_MAX_IDLE_TIME")) * time.Second,
+		DatabaseConfig: DefaultDatabaseConfig(),
+		ParseTime:      true,
+		Charset:        "utf8mb4",
 	}
 }
 
@@ -63,38 +33,53 @@ type MySQLDB struct {
 	logger log.Logger
 }
 
-// sqlRows implements the Rows interface for sql.Rows
-type sqlRows struct {
-	rows *sql.Rows
-}
-
-func (r *sqlRows) Next() bool {
-	return r.rows.Next()
-}
-
-func (r *sqlRows) Scan(dest ...interface{}) error {
-	return r.rows.Scan(dest...)
-}
-
-func (r *sqlRows) Close() error {
-	return r.rows.Close()
-}
-
-// sqlRow implements the Row interface for sql.Row
-type sqlRow struct {
+// MySQLRow implements the Row interface for MySQL
+type MySQLRow struct {
 	row *sql.Row
 }
 
-func (r *sqlRow) Scan(dest ...interface{}) error {
+// Scan implements the Row.Scan method
+func (r *MySQLRow) Scan(dest ...interface{}) error {
 	return r.row.Scan(dest...)
 }
 
-// sqlTransaction implements the Transaction interface for MySQL
-type sqlTransaction struct {
+// MySQLRows implements the Rows interface for MySQL
+type MySQLRows struct {
+	rows *sql.Rows
+}
+
+// Close implements the Rows.Close method
+func (r *MySQLRows) Close() error {
+	return r.rows.Close()
+}
+
+// Next implements the Rows.Next method
+func (r *MySQLRows) Next() bool {
+	return r.rows.Next()
+}
+
+// Scan implements the Rows.Scan method
+func (r *MySQLRows) Scan(dest ...interface{}) error {
+	return r.rows.Scan(dest...)
+}
+
+// Columns implements the Rows.Columns method
+func (r *MySQLRows) Columns() ([]string, error) {
+	return r.rows.Columns()
+}
+
+// Err implements the Rows.Err method
+func (r *MySQLRows) Err() error {
+	return r.rows.Err()
+}
+
+// MySQLTx implements the Tx interface for MySQL
+type MySQLTx struct {
 	tx *sql.Tx
 }
 
-func (t *sqlTransaction) Execute(ctx context.Context, query string, args ...interface{}) (int64, error) {
+// Execute implements the Tx.Execute method
+func (t *MySQLTx) Execute(ctx context.Context, query string, args ...interface{}) (int64, error) {
 	result, err := t.tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
@@ -102,49 +87,70 @@ func (t *sqlTransaction) Execute(ctx context.Context, query string, args ...inte
 	return result.RowsAffected()
 }
 
-func (t *sqlTransaction) Query(ctx context.Context, query string, args ...interface{}) (Rows, error) {
+// Query implements the Tx.Query method
+func (t *MySQLTx) Query(ctx context.Context, query string, args ...interface{}) (Rows, error) {
 	rows, err := t.tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
-	return &sqlRows{rows: rows}, nil
+	return &MySQLRows{rows: rows}, nil
 }
 
-func (t *sqlTransaction) QueryRow(ctx context.Context, query string, args ...interface{}) Row {
-	return &sqlRow{row: t.tx.QueryRowContext(ctx, query, args...)}
+// QueryRow implements the Tx.QueryRow method
+func (t *MySQLTx) QueryRow(ctx context.Context, query string, args ...interface{}) Row {
+	return &MySQLRow{row: t.tx.QueryRowContext(ctx, query, args...)}
+}
+
+// Commit implements the Tx.Commit method
+func (t *MySQLTx) Commit() error {
+	return t.tx.Commit()
+}
+
+// Rollback implements the Tx.Rollback method
+func (t *MySQLTx) Rollback() error {
+	return t.tx.Rollback()
 }
 
 // NewMySQLDB creates a new MySQL database connection
 func NewMySQLDB(logger log.Logger, config MySQLConfig) (DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
+	// Build the DSN (Data Source Name)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=%t",
 		config.Username,
 		config.Password,
 		config.Host,
 		config.Port,
 		config.Database,
+		config.Charset,
+		config.ParseTime,
 	)
 
 	logger.With("host", config.Host).
 		With("port", config.Port).
 		With("database", config.Database).
+		With("username", config.Username).
 		Info("Connecting to MySQL database")
 
+	// Open the database connection
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		logger.With("error", err.Error()).Error("Failed to create MySQL database connection")
-		return nil, errors.NewDatabaseError("Failed to create database connection", err)
+		return nil, errors.NewDatabaseError("failed to open database connection", err)
 	}
 
-	// Set connection pool settings
+	// Configure connection pool
 	db.SetMaxOpenConns(config.MaxOpenConns)
 	db.SetMaxIdleConns(config.MaxIdleConns)
 	db.SetConnMaxLifetime(config.ConnMaxLifetime)
 	db.SetConnMaxIdleTime(config.ConnMaxIdleTime)
 
-	// Test connection
-	if err := db.Ping(); err != nil {
+	// Set connection timeout
+	ctx, cancel := context.WithTimeout(context.Background(), config.Timeout)
+	defer cancel()
+
+	// Verify the connection
+	if err := db.PingContext(ctx); err != nil {
 		logger.With("error", err.Error()).Error("Failed to connect to MySQL database")
-		return nil, errors.NewDatabaseError("Failed to connect to database", err)
+		return nil, errors.NewDatabaseError("failed to connect to database", err)
 	}
 
 	logger.Info("Successfully connected to MySQL database")
@@ -155,13 +161,14 @@ func NewMySQLDB(logger log.Logger, config MySQLConfig) (DB, error) {
 	}, nil
 }
 
-// Execute executes a query that doesn't return rows
+// Execute implements the DB.Execute method
 func (d *MySQLDB) Execute(ctx context.Context, query string, args ...interface{}) (int64, error) {
-	// Check if there's a transaction in the context
-	if tx, ok := TransactionFromContext(ctx); ok {
+	// Check if we're in a transaction
+	if tx, ok := GetTxFromContext(ctx); ok {
 		return tx.Execute(ctx, query, args...)
 	}
 
+	// Execute directly
 	result, err := d.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
@@ -169,86 +176,63 @@ func (d *MySQLDB) Execute(ctx context.Context, query string, args ...interface{}
 	return result.RowsAffected()
 }
 
-// Query executes a query that returns rows
+// Query implements the DB.Query method
 func (d *MySQLDB) Query(ctx context.Context, query string, args ...interface{}) (Rows, error) {
-	// Check if there's a transaction in the context
-	if tx, ok := TransactionFromContext(ctx); ok {
+	// Check if we're in a transaction
+	if tx, ok := GetTxFromContext(ctx); ok {
 		return tx.Query(ctx, query, args...)
 	}
 
+	// Query directly
 	rows, err := d.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
-	return &sqlRows{rows: rows}, nil
+	return &MySQLRows{rows: rows}, nil
 }
 
-// QueryRow executes a query that returns a single row
+// QueryRow implements the DB.QueryRow method
 func (d *MySQLDB) QueryRow(ctx context.Context, query string, args ...interface{}) Row {
-	// Check if there's a transaction in the context
-	if tx, ok := TransactionFromContext(ctx); ok {
+	// Check if we're in a transaction
+	if tx, ok := GetTxFromContext(ctx); ok {
 		return tx.QueryRow(ctx, query, args...)
 	}
 
-	return &sqlRow{row: d.db.QueryRowContext(ctx, query, args...)}
+	// Query directly
+	return &MySQLRow{row: d.db.QueryRowContext(ctx, query, args...)}
 }
 
-// WithTransaction executes a function within a transaction
-func (d *MySQLDB) WithTransaction(ctx context.Context, fn func(context.Context, Transaction) error) error {
-	// Check if there's already a transaction in the context
-	if tx, ok := TransactionFromContext(ctx); ok {
-		return fn(ctx, tx)
-	}
-
+// BeginTx implements the DB.BeginTx method
+func (d *MySQLDB) BeginTx(ctx context.Context) (Tx, error) {
 	// Start a new transaction
-	sqlTx, err := d.db.BeginTx(ctx, nil)
+	tx, err := d.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.NewDatabaseError("Failed to begin transaction", err)
+		return nil, err
 	}
-
-	tx := &sqlTransaction{tx: sqlTx}
-	txCtx := ContextWithTransaction(ctx, tx)
-
-	// Handle panics
-	defer func() {
-		if p := recover(); p != nil {
-			sqlTx.Rollback()
-			panic(p) // Re-throw the panic
-		}
-	}()
-
-	// Execute the function
-	if err := fn(txCtx, tx); err != nil {
-		if rbErr := sqlTx.Rollback(); rbErr != nil {
-			return fmt.Errorf("rollback error: %v (original error: %v)", rbErr, err)
-		}
-		return err
-	}
-
-	// Commit the transaction
-	if err := sqlTx.Commit(); err != nil {
-		return errors.NewDatabaseError("Failed to commit transaction", err)
-	}
-
-	return nil
+	return &MySQLTx{tx: tx}, nil
 }
 
-// Close closes the database connection
+// Ping implements the DB.Ping method
+func (d *MySQLDB) Ping(ctx context.Context) error {
+	return d.db.PingContext(ctx)
+}
+
+// Close implements the DB.Close method
 func (d *MySQLDB) Close() error {
 	return d.db.Close()
 }
 
-// Singleton instance
+// Singleton management
 var (
-	mysqlDBInstance DB
-	mysqlOnce       sync.Once
-	mysqlInitErr    error
+	mysqlInstance DB
+	mysqlOnce     sync.Once
+	mysqlInitErr  error
 )
 
-// GetMySQLSingleton returns a singleton MySQL DB instance
+// GetMySQLSingleton returns a singleton MySQL database instance
 func GetMySQLSingleton(logger log.Logger, config MySQLConfig) (DB, error) {
 	mysqlOnce.Do(func() {
-		mysqlDBInstance, mysqlInitErr = NewMySQLDB(logger, config)
+		mysqlInstance, mysqlInitErr = NewMySQLDB(logger, config)
 	})
-	return mysqlDBInstance, mysqlInitErr
+	return mysqlInstance, mysqlInitErr
 }

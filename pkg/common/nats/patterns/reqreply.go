@@ -9,10 +9,8 @@ import (
 	"github.com/0xsj/fn-go/pkg/common/nats"
 )
 
-// RequestHandler is a function that handles a request
 type RequestHandler func(data []byte) (interface{}, error)
 
-// Request sends a request and waits for a response
 func Request(conn *nats.Conn, subject string, request interface{}, response interface{}, timeout time.Duration, logger log.Logger) error {
 	reqLogger := logger.With("subject", subject).With("operation", "Request")
 	reqLogger.Info("Preparing NATS request")
@@ -22,7 +20,6 @@ func Request(conn *nats.Conn, subject string, request interface{}, response inte
 		reqLogger.With("duration_ms", time.Since(startTime).Milliseconds()).Debug("NATS request completed")
 	}()
 
-	// Marshal the request to JSON
 	reqLogger.Debug("Marshaling request to JSON")
 	data, err := json.Marshal(request)
 	if err != nil {
