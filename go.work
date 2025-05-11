@@ -4,6 +4,7 @@ use (
 	./gateway
 	./pkg
 	./services/auth-service
+	./services/chat-service
 	./services/entity-service
 	./services/incident-service
 	./services/location-service

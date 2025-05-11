@@ -151,4 +151,49 @@ func setupHandlers(conn *nats.Conn, logger log.Logger) {
 		handlerLogger.Info("User created successfully")
 		return user, nil
 	}, logger)
+
+	patterns.HandleRequest(conn, "service.user.health", func(data []byte) (interface{}, error) {
+		handlerLogger := logger.With("subject", "service.user.health")
+		handlerLogger.Info("Received health check request")
+		
+		response := map[string]interface{}{
+			"service": "user-service",
+			"status":  "ok",
+			"time":    time.Now().Format(time.RFC3339),
+			"version": "1.0.0",
+		}
+		
+		handlerLogger.Info("Returning health check response")
+		return response, nil
+	}, logger)
+
+	patterns.HandleRequest(conn, "service.user.test.auth", func(data []byte) (interface{}, error) {
+		handlerLogger := logger.With("subject", "service.user.test.auth")
+		handlerLogger.Info("Received request to test auth service connection")
+		
+		var authResponse map[string]interface{}
+		err := patterns.Request(conn, "service.auth.health", struct{}{}, &authResponse, 5*time.Second, logger)
+		
+		if err != nil {
+			handlerLogger.With("error", err.Error()).Error("Failed to communicate with auth service")
+			return map[string]interface{}{
+				"success": false,
+				"error":   "Failed to communicate with auth service: " + err.Error(),
+			}, nil
+		}
+		
+		response := map[string]interface{}{
+			"success":             true,
+			"message":             "Successfully communicated with auth service",
+			"auth_service_status": authResponse,
+			"user_service": map[string]interface{}{
+				"service": "user-service",
+				"time":    time.Now().Format(time.RFC3339),
+				"users":   len(users),
+			},
+		}
+		
+		handlerLogger.Info("Successfully tested auth service communication")
+		return response, nil
+	}, logger)
 }

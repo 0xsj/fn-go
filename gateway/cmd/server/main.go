@@ -1,4 +1,4 @@
-// gateway/main.go
+// gateway/cmd/server/main.go
 package main
 
 import (
@@ -71,7 +71,7 @@ func main() {
 func setupRoutes(mux *http.ServeMux, conn *nats.Conn, respHandler *response.HTTPHandler, logger log.Logger) {
 	logger.Info("Setting up API routes")
 	
-	// Users endpoint
+	// Your existing users endpoint (keeping this from your example)
 	mux.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
 		reqLogger := logger.With("method", r.Method).With("path", r.URL.Path)
 		reqLogger.Info("Received HTTP request")
@@ -222,6 +222,140 @@ func setupRoutes(mux *http.ServeMux, conn *nats.Conn, respHandler *response.HTTP
 			reqLogger.With("method", r.Method).Warn("Method not allowed")
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
+	})
+	
+	// NEW: Health check endpoint
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		reqLogger := logger.With("method", r.Method).With("path", r.URL.Path)
+		reqLogger.Info("Received health check request")
+		
+		// Gateway's own health status
+		response := map[string]interface{}{
+			"service": "api-gateway",
+			"status":  "ok",
+			"time":    time.Now().Format(time.RFC3339),
+			"version": "1.0.0",
+		}
+		
+		respHandler.Success(w, response, "Gateway is healthy")
+		reqLogger.Info("Health check response sent")
+	})
+	
+	// NEW: Test user service health endpoint
+	mux.HandleFunc("/test/user-service", func(w http.ResponseWriter, r *http.Request) {
+		reqLogger := logger.With("method", r.Method).With("path", r.URL.Path)
+		reqLogger.Info("Received user service test request")
+		
+		var result struct {
+			Success bool        `json:"success"`
+			Data    interface{} `json:"data,omitempty"`
+			Error   interface{} `json:"error,omitempty"`
+		}
+		
+		reqLogger.Info("Sending NATS request to service.user.health")
+		startTime := time.Now()
+		err := patterns.Request(conn, "service.user.health", struct{}{}, &result, 5*time.Second, logger)
+		reqLogger.With("duration_ms", time.Since(startTime).Milliseconds()).Info("NATS request completed")
+		
+		if err != nil {
+			reqLogger.With("error", err.Error()).Error("NATS request failed")
+			respHandler.Error(w, response.ErrorResponse{
+				Code:    "INTERNAL_SERVER_ERROR",
+				Message: "Failed to communicate with user service: " + err.Error(),
+			})
+			return
+		}
+		
+		if !result.Success {
+			reqLogger.With("error", result.Error).Error("Service reported error")
+			respHandler.Error(w, response.ErrorResponse{
+				Code:    "INTERNAL_SERVER_ERROR",
+				Message: "User service health check failed",
+				Details: result.Error,
+			})
+			return
+		}
+		
+		reqLogger.Info("User service health check successful")
+		respHandler.Success(w, result.Data, "User service is healthy")
+	})
+	
+	// NEW: Test auth service health endpoint
+	mux.HandleFunc("/test/auth-service", func(w http.ResponseWriter, r *http.Request) {
+		reqLogger := logger.With("method", r.Method).With("path", r.URL.Path)
+		reqLogger.Info("Received auth service test request")
+		
+		var result struct {
+			Success bool        `json:"success"`
+			Data    interface{} `json:"data,omitempty"`
+			Error   interface{} `json:"error,omitempty"`
+		}
+		
+		reqLogger.Info("Sending NATS request to service.auth.health")
+		startTime := time.Now()
+		err := patterns.Request(conn, "service.auth.health", struct{}{}, &result, 5*time.Second, logger)
+		reqLogger.With("duration_ms", time.Since(startTime).Milliseconds()).Info("NATS request completed")
+		
+		if err != nil {
+			reqLogger.With("error", err.Error()).Error("NATS request failed")
+			respHandler.Error(w, response.ErrorResponse{
+				Code:    "INTERNAL_SERVER_ERROR",
+				Message: "Failed to communicate with auth service: " + err.Error(),
+			})
+			return
+		}
+		
+		if !result.Success {
+			reqLogger.With("error", result.Error).Error("Service reported error")
+			respHandler.Error(w, response.ErrorResponse{
+				Code:    "INTERNAL_SERVER_ERROR",
+				Message: "Auth service health check failed",
+				Details: result.Error,
+			})
+			return
+		}
+		
+		reqLogger.Info("Auth service health check successful")
+		respHandler.Success(w, result.Data, "Auth service is healthy")
+	})
+	
+	// NEW: Test service-to-service communication
+	mux.HandleFunc("/test/service-to-service", func(w http.ResponseWriter, r *http.Request) {
+		reqLogger := logger.With("method", r.Method).With("path", r.URL.Path)
+		reqLogger.Info("Received service-to-service test request")
+		
+		var result struct {
+			Success bool        `json:"success"`
+			Data    interface{} `json:"data,omitempty"`
+			Error   interface{} `json:"error,omitempty"`
+		}
+		
+		reqLogger.Info("Sending NATS request to service.user.test.auth")
+		startTime := time.Now()
+		err := patterns.Request(conn, "service.user.test.auth", struct{}{}, &result, 5*time.Second, logger)
+		reqLogger.With("duration_ms", time.Since(startTime).Milliseconds()).Info("NATS request completed")
+		
+		if err != nil {
+			reqLogger.With("error", err.Error()).Error("NATS request failed")
+			respHandler.Error(w, response.ErrorResponse{
+				Code:    "INTERNAL_SERVER_ERROR",
+				Message: "Failed to test service-to-service communication: " + err.Error(),
+			})
+			return
+		}
+		
+		if !result.Success {
+			reqLogger.With("error", result.Error).Error("Service reported error")
+			respHandler.Error(w, response.ErrorResponse{
+				Code:    "INTERNAL_SERVER_ERROR",
+				Message: "Service-to-service test failed",
+				Details: result.Error,
+			})
+			return
+		}
+		
+		reqLogger.Info("Service-to-service test successful")
+		respHandler.Success(w, result.Data, "Service-to-service communication test successful")
 	})
 	
 	logger.Info("Routes setup complete")
