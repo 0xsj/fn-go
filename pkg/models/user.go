@@ -11,19 +11,63 @@ const (
 	RoleDispatcher Role = "dispatcher"
 )
 
+type UserStatus string
+
+const (
+    UserStatusActive    UserStatus = "active"
+    UserStatusInactive  UserStatus = "inactive"
+    UserStatusSuspended UserStatus = "suspended"
+    UserStatusPending   UserStatus = "pending"
+)
+
+
 type User struct {
-	ID			string	`json:"id"`
-	Username	string	`json:"username"`
-	Email		string	`json:"email"`
-	Password	string	`json:"-"`
-	FirstName	string	`json:"first_name"`
-	LastName	string 	`json:"last_name"`
-	Phone		string	`json:"phone"`
-	Role		Role	`json:"role"`
-	Active		bool	`json:"active"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+    ID            string     `json:"id"`
+    Username      string     `json:"username"`
+    Email         string     `json:"email"`
+    Password      string     `json:"-"`
+    FirstName     string     `json:"first_name"`
+    LastName      string     `json:"last_name"`
+    Phone         string     `json:"phone,omitempty"`
+    Role          Role       `json:"role"`
+    Status        UserStatus `json:"status"`
+    LastLoginAt   *time.Time `json:"last_login_at,omitempty"`
+    FailedLogins  int        `json:"failed_logins,omitempty"`
+    EmailVerified bool       `json:"email_verified"`
+    Preferences   UserPreferences `json:"preferences,omitempty"`
+    CreatedAt     time.Time  `json:"created_at"`
+    UpdatedAt     time.Time  `json:"updated_at"`
+    DeletedAt     *time.Time `json:"deleted_at,omitempty"`
+}
+
+type UserPreferences struct {
+    Theme            string `json:"theme,omitempty"`
+    NotificationsEnabled bool   `json:"notifications_enabled"`
+    Language         string `json:"language,omitempty"`
+    Timezone         string `json:"timezone,omitempty"`
+}
+
+type UserContact struct {
+    ID          string    `json:"id"`
+    UserID      string    `json:"user_id"`
+    Type        string    `json:"type"` 
+    Value       string    `json:"value"`
+    IsPrimary   bool      `json:"is_primary"`
+    CreatedAt   time.Time `json:"created_at"`
+    UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type UserCredentials struct {
+    Username string `json:"username"`
+    Password string `json:"password"`
+}
+
+type UserSummary struct {
+    ID        string `json:"id"`
+    Username  string `json:"username"`
+    FirstName string `json:"first_name"`
+    LastName  string `json:"last_name"`
+    Role      Role   `json:"role"`
 }
 
 type UserCreateRequest struct {
@@ -46,18 +90,7 @@ type UserUpdateRequest struct {
     Active    *bool   `json:"active,omitempty"`
 }
 
-type UserCredentials struct {
-    Username string `json:"username"`
-    Password string `json:"password"`
-}
 
-type UserSummary struct {
-    ID        string `json:"id"`
-    Username  string `json:"username"`
-    FirstName string `json:"first_name"`
-    LastName  string `json:"last_name"`
-    Role      Role   `json:"role"`
-}
 
 type UserLookupRequest struct {
     ID string `json:"id"`
@@ -65,4 +98,15 @@ type UserLookupRequest struct {
 
 type UserLookupResponse struct {
     User *User `json:"user"`
+}
+
+func (u *User) GetFullName() string {
+    if u.FirstName == "" && u.LastName == "" {
+        return u.Username
+    }
+    return u.FirstName + " " + u.LastName
+}
+
+func (u *User) IsActive() bool {
+    return u.Status == UserStatusActive
 }
