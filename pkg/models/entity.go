@@ -36,7 +36,7 @@ type Entity struct {
     LogoURL          string       `json:"logo_url,omitempty"`
     Industry         string       `json:"industry,omitempty"`
     TaxID            string       `json:"tax_id,omitempty"`
-    Metadata         map[string]interface{} `json:"metadata,omitempty"`
+    Metadata         map[string]any `json:"metadata,omitempty"`
     Tags             []string     `json:"tags,omitempty"`
     CreatedAt        time.Time    `json:"created_at"`
     UpdatedAt        time.Time    `json:"updated_at"`
