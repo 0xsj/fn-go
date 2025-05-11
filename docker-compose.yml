@@ -1,73 +1,171 @@
 services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: fn-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: app
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./infra/db/init:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p$$MYSQL_ROOT_PASSWORD",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # NATS Service
   nats:
     image: nats:2.10-alpine
     ports:
       - "4222:4222"
       - "8222:8222"
 
+  # Auth Service
   auth-service:
     build:
       context: .
       dockerfile: services/auth-service/Dockerfile
     environment:
       - NATS_URL=nats://nats:4222
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+      - DB_NAME=auth_service
     depends_on:
       - nats
+      - mysql
 
+  # Entity Service
   entity-service:
     build:
       context: .
       dockerfile: services/entity-service/Dockerfile
     environment:
       - NATS_URL=nats://nats:4222
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+      - DB_NAME=entity_service
     depends_on:
       - nats
+      - mysql
 
+  # Incident Service
   incident-service:
     build:
       context: .
       dockerfile: services/incident-service/Dockerfile
     environment:
       - NATS_URL=nats://nats:4222
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+      - DB_NAME=incident_service
     depends_on:
       - nats
+      - mysql
 
+  # Location Service
   location-service:
     build:
       context: .
       dockerfile: services/location-service/Dockerfile
     environment:
       - NATS_URL=nats://nats:4222
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+      - DB_NAME=location_service
     depends_on:
       - nats
+      - mysql
 
+  # Monitoring Service
   monitoring-service:
     build:
       context: .
       dockerfile: services/monitoring-service/Dockerfile
     environment:
       - NATS_URL=nats://nats:4222
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+      - DB_NAME=monitoring_service
     depends_on:
       - nats
+      - mysql
 
+  # Notification Service
   notification-service:
     build:
       context: .
       dockerfile: services/notification-service/Dockerfile
     environment:
       - NATS_URL=nats://nats:4222
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+      - DB_NAME=notification_service
     depends_on:
       - nats
+      - mysql
 
+  # Chat Service
+  chat-service:
+    build:
+      context: .
+      dockerfile: services/chat-service/Dockerfile
+    environment:
+      - NATS_URL=nats://nats:4222
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+      - DB_NAME=chat_service
+    depends_on:
+      - nats
+      - mysql
+
+  # User Service
   user-service:
     build:
       context: .
       dockerfile: services/user-service/Dockerfile
     environment:
       - NATS_URL=nats://nats:4222
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+      - DB_NAME=user_service
     depends_on:
       - nats
+      - mysql
 
+  # API Gateway
   gateway:
     build:
       context: .
@@ -84,4 +182,8 @@ services:
       - location-service
       - monitoring-service
       - notification-service
+      - chat-service
       - user-service
+
+volumes:
+  mysql-data:
