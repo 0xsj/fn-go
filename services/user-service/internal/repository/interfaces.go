@@ -31,7 +31,7 @@ type UserRepository interface {
     IncrementFailedLogins(ctx context.Context, userID string) error
     ResetFailedLogins(ctx context.Context, userID string) error
 
-	  SetEmailVerified(ctx context.Context, userID string, verified bool) error
+	SetEmailVerified(ctx context.Context, userID string, verified bool) error
     
     // User preferences
     UpdatePreferences(ctx context.Context, userID string, preferences models.UserPreferences) error
