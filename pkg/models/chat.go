@@ -61,7 +61,7 @@ type Chat struct {
 	CreatedAt    time.Time   `json:"created_at"`
 	UpdatedAt    time.Time   `json:"updated_at"`
 	DeletedAt    *time.Time  `json:"deleted_at,omitempty"`
-	Metadata     map[string]interface{} `json:"metadata,omitempty"`
+	Metadata     map[string]any `json:"metadata,omitempty"`
 }
 
 // ChatParticipant represents a user in a chat
@@ -89,7 +89,7 @@ type ChatMessage struct {
 	ContentType      ChatContentType   `json:"content_type"`
 	Content          string            `json:"content"`
 	PlainText        string            `json:"plain_text,omitempty"` // For searching and notifications
-	RichContent      interface{}       `json:"rich_content,omitempty"` // For structured content
+	RichContent      any		       `json:"rich_content,omitempty"` // For structured content
 	Status           ChatMessageStatus `json:"status"`
 	Attachments      []ChatAttachment  `json:"attachments,omitempty"`
 	Mentions         []string          `json:"mentions,omitempty"` // User IDs
@@ -101,7 +101,7 @@ type ChatMessage struct {
 	SentAt           time.Time         `json:"sent_at"`
 	CreatedAt        time.Time         `json:"created_at"`
 	UpdatedAt        time.Time         `json:"updated_at"`
-	Metadata         map[string]interface{} `json:"metadata,omitempty"`
+	Metadata         map[string]any	   `json:"metadata,omitempty"`
 }
 
 // ChatAttachment represents a file attached to a chat message

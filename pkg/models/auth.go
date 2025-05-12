@@ -20,7 +20,7 @@ type Token struct {
     ExpiresAt time.Time `json:"expires_at"`
     RevokedAt *time.Time `json:"revoked_at,omitempty"`
     CreatedAt time.Time `json:"created_at"`
-    Metadata  map[string]interface{} `json:"metadata,omitempty"`
+    Metadata  map[string]any `json:"metadata,omitempty"`
 }
 
 type TokenClaims struct {
@@ -34,7 +34,7 @@ type TokenClaims struct {
     Issuer    string            `json:"iss"`
     Audience  string            `json:"aud,omitempty"`
     JWTID     string            `json:"jti"`
-    Custom    map[string]interface{} `json:"custom,omitempty"`
+    Custom    map[string]any `json:"custom,omitempty"`
 }
 
 type Session struct {
