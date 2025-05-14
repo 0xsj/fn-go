@@ -14,6 +14,49 @@ docker-up:
 docker-down:
 	docker-compose down
 
+# Docker development environment
+.PHONY: dev-up
+dev-up:
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+.PHONY: dev-down
+dev-down:
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
+
+.PHONY: dev-logs
+dev-logs:
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml logs -f
+
+# Rebuild and restart specific service
+.PHONY: dev-restart
+dev-restart:
+	@read -p "Enter service name: " service; \
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build $$service
+
+# Database management
+.PHONY: db-shell
+db-shell:
+	docker exec -it fn-mysql mysql -u$(DB_USER) -p$(DB_PASSWORD)
+
+.PHONY: db-reset
+db-reset:
+	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD) -e "DROP DATABASE IF EXISTS auth_service; DROP DATABASE IF EXISTS user_service; DROP DATABASE IF EXISTS entity_service; DROP DATABASE IF EXISTS incident_service; DROP DATABASE IF EXISTS location_service; DROP DATABASE IF EXISTS monitoring_service; DROP DATABASE IF EXISTS notification_service; DROP DATABASE IF EXISTS chat_service;"
+	docker exec -it fn-mysql bash -c "cd /docker-entrypoint-initdb.d && mysql -uroot -p$(DB_ROOT_PASSWORD) < init-databases.sql"
+
+# Deploy to production
+.PHONY: prod-build
+prod-build:
+	docker-compose build
+
+.PHONY: prod-up
+prod-up:
+	docker-compose up -d
+
+.PHONY: prod-down
+prod-down:
+	docker-compose down
+
+
 # Kubernetes commands
 .PHONY: k8s-apply
 k8s-apply:
