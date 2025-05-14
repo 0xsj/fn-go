@@ -1,0 +1,32 @@
+# services/auth-service/Dockerfile.dev
+FROM golang:1.24-alpine
+
+# Install development tools
+RUN go install github.com/cosmtrek/air@latest
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+RUN apk add --no-cache git curl
+
+WORKDIR /app
+
+# Copy go.work files
+COPY go.work go.work.sum ./
+
+# We'll mount the source code as a volume, but copy initially
+# to ensure all dependencies are available
+COPY pkg/ ./pkg/
+COPY services/ ./services/
+COPY gateway/ ./gateway/
+
+# Set working directory to the service
+WORKDIR /app/services/auth-service
+
+# Create directory for air
+RUN mkdir -p tmp
+
+# Configure delve debugging
+ENV DELVE_LISTEN_PORT=40000
+EXPOSE 8080
+EXPOSE 40000
+
+# Command to run air for hot reloading
+CMD ["air", "-c", ".air.toml"]

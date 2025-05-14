@@ -1,0 +1,7 @@
+# .gitignore
+.env
+.env.*
+!.env.example
+services/**/.env
+services/**/.env.*
+!services/**/.env.example
