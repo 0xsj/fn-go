@@ -1,4 +1,4 @@
-// services/notification-service/internal/handlers/health_handler.go
+// services/monitoring-service/internal/handlers/health_handler.go
 package handlers
 
 import (
@@ -24,16 +24,16 @@ func NewHealthHandler(logger log.Logger) *HealthHandler {
 // RegisterHandlers registers health-related handlers with NATS
 func (h *HealthHandler) RegisterHandlers(conn *nats.Conn) {
 	// Health check handler
-	patterns.HandleRequest(conn, "service.notification.health", h.HealthCheck, h.logger)
+	patterns.HandleRequest(conn, "service.monitoring.health", h.HealthCheck, h.logger)
 }
 
 // HealthCheck handles health check requests
 func (h *HealthHandler) HealthCheck(data []byte) (interface{}, error) {
-	handlerLogger := h.logger.With("subject", "service.notification.health")
+	handlerLogger := h.logger.With("subject", "service.monitoring.health")
 	handlerLogger.Info("Received health check request")
 	
 	response := map[string]interface{}{
-		"service": "notification-service",
+		"service": "monitoring-service",
 		"status":  "ok",
 		"time":    time.Now().Format(time.RFC3339),
 		"version": "1.0.0",
