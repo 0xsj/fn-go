@@ -2,107 +2,53 @@
 package config
 
 import (
-	"time"
+	"github.com/0xsj/fn-go/pkg/common/config"
+	"github.com/0xsj/fn-go/pkg/common/log"
 )
 
-// Config represents the application configuration
 type Config struct {
 	Service  ServiceConfig
-	Server   ServerConfig
-	Database DatabaseConfig
-	NATS     NATSConfig
-	CORS     CORSConfig
-	Metrics  MetricsConfig
+	Server   config.ServerConfig
+	Database config.DatabaseConfig
+	NATS     config.NATSConfig
+	Logging  config.LogConfig
 }
 
-// ServiceConfig represents service-specific configuration
 type ServiceConfig struct {
-	ID      string
 	Name    string
 	Version string
 }
 
-// ServerConfig represents HTTP server configuration
-type ServerConfig struct {
-	Port         string
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-	IdleTimeout  time.Duration
-}
-
-// DatabaseConfig represents database configuration
-type DatabaseConfig struct {
-	Host            string
-	Port            string
-	User            string
-	Password        string
-	Name            string
-	MaxOpenConns    int
-	MaxIdleConns    int
-	ConnMaxLifetime time.Duration
-}
-
-// NATSConfig represents NATS configuration
-type NATSConfig struct {
-	URL            string
-	RequestTimeout time.Duration
-}
-
-// CORSConfig represents CORS configuration
-type CORSConfig struct {
-	AllowedOrigins   []string
-	AllowedMethods   []string
-	AllowedHeaders   []string
-	ExposedHeaders   []string
-	AllowCredentials bool
-	MaxAge           time.Duration
-}
-
-// MetricsConfig represents metrics configuration
-type MetricsConfig struct {
-	Enabled     bool
-	ServiceName string
-}
-
-// DefaultConfig returns a configuration with default values
-func DefaultConfig() *Config {
-	return &Config{
+func Load(logger log.Logger) (*Config, error) {
+	provider := config.NewEnvProvider("USER_SERVICE").
+		WithRequiredVars(
+			"DB_HOST", 
+			"DB_USER", 
+			"DB_PASSWORD", 
+			"DB_NAME",
+			"NATS_URL",
+		)
+	
+	if err := provider.Validate(); err != nil {
+		logger.With("error", err.Error()).
+			With("missing_vars", provider.MissingVars()).
+			Error("Missing required configuration")
+		return nil, err
+	}
+	
+	cfg := &Config{
 		Service: ServiceConfig{
-			ID:      "user-service",
-			Name:    "User Service",
-			Version: "1.0.0",
+			Name:    provider.GetDefault("NAME", "user-service"),
+			Version: provider.GetDefault("VERSION", "1.0.0"),
 		},
-		Server: ServerConfig{
-			Port:         ":8080",
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 10 * time.Second,
-			IdleTimeout:  60 * time.Second,
-		},
-		Database: DatabaseConfig{
-			Host:            "localhost",
-			Port:            "3306",
-			User:            "root",
-			Password:        "password",
-			Name:            "user_service",
-			MaxOpenConns:    25,
-			MaxIdleConns:    5,
-			ConnMaxLifetime: 5 * time.Minute,
-		},
-		NATS: NATSConfig{
-			URL:            "nats://localhost:4222",
-			RequestTimeout: 5 * time.Second,
-		},
-		CORS: CORSConfig{
-			AllowedOrigins:   []string{"*"},
-			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-			ExposedHeaders:   []string{"Link"},
-			AllowCredentials: true,
-			MaxAge:           300 * time.Second,
-		},
-		Metrics: MetricsConfig{
-			Enabled:     true,
-			ServiceName: "user-service",
+		Server:   config.LoadServerConfigFromProvider(provider, ""),
+		Database: config.LoadDatabaseConfigFromProvider(provider, ""),
+		NATS:     config.LoadNATSConfigFromProvider(provider, ""),
+		Logging: config.LogConfig{
+			Level:  provider.GetDefault("LOG_LEVEL", "info"),
+			Format: provider.GetDefault("LOG_FORMAT", "text"),
 		},
 	}
+	
+	return cfg, nil
 }
