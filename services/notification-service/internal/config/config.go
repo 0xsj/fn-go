@@ -112,7 +112,7 @@ func Load(logger log.Logger) (*Config, error) {
 				Port:      provider.GetIntDefault("SMTP_PORT", 1025), // Default to mailhog in dev
 				Username:  provider.GetDefault("SMTP_USERNAME", ""),
 				Password:  provider.GetDefault("SMTP_PASSWORD", ""),
-				FromName:  provider.GetDefault("SMTP_FROM_NAME", "Field Nexus Dev"),
+				FromName:  provider.GetDefault("SMTP_FROM_NAME", "FN-GO Dev"),
 				FromEmail: provider.GetDefault("SMTP_FROM_EMAIL", "dev@example.com"),
 				UseTLS:    provider.GetBoolDefault("SMTP_USE_TLS", false),
 			},
