@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/0xsj/fn-go/pkg/common/db"
 	"github.com/0xsj/fn-go/pkg/common/errors"
 	"github.com/0xsj/fn-go/pkg/common/log"
 	"github.com/0xsj/fn-go/pkg/models"
@@ -15,11 +16,11 @@ import (
 
 // UserRepository implements repository.UserRepository using MySQL
 type UserRepository struct {
-	db     *sql.DB
+	db     db.DB
 	logger log.Logger
 }
 
-func NewUserRepository(db *sql.DB, logger log.Logger) repository.UserRepository {
+func NewUserRepository(db db.DB, logger log.Logger) repository.UserRepository {
 	return &UserRepository{
 		db:     db,
 		logger: logger.WithLayer("mysql-user-repository"),
@@ -39,7 +40,8 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 		return errors.NewInternalError("failed to marshal preferences", err)
 	}
 
-	_, err = r.db.ExecContext(
+	// Use Execute instead of ExecContext
+	_, err = r.db.Execute(
 		ctx,
 		query,
 		user.ID,
@@ -86,7 +88,9 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
 	var lastLoginAt sql.NullTime
 	var deletedAt sql.NullTime
 
-	err := r.db.QueryRowContext(ctx, query, id).Scan(
+	// Use QueryRow instead of QueryRowContext
+	row := r.db.QueryRow(ctx, query, id)
+	err := row.Scan(
 		&user.ID,
 		&user.Username,
 		&user.Email,
@@ -126,6 +130,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
 	}
 	return user, nil
 }
+
 func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
     query := `
         SELECT id, username, email, password, first_name, last_name, phone, 
@@ -140,7 +145,9 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
     var lastLoginAt sql.NullTime
     var deletedAt sql.NullTime
     
-    err := r.db.QueryRowContext(ctx, query, email).Scan(
+    // Use QueryRow instead of QueryRowContext
+    row := r.db.QueryRow(ctx, query, email)
+    err := row.Scan(
         &user.ID,
         &user.Username,
         &user.Email,
@@ -199,7 +206,9 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*m
     var lastLoginAt sql.NullTime
     var deletedAt sql.NullTime
     
-    err := r.db.QueryRowContext(ctx, query, username).Scan(
+    // Use QueryRow instead of QueryRowContext
+    row := r.db.QueryRow(ctx, query, username)
+    err := row.Scan(
         &user.ID,
         &user.Username,
         &user.Email,
