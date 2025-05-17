@@ -71,3 +71,58 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 	}
 	return nil
 }
+
+func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, error) {
+	query := `
+		SELECT id, username, email, password, first_name, last_name, phone, 
+		       role, status, last_login_at, failed_logins, email_verified, 
+		       preferences, created_at, updated_at, deleted_at
+		FROM users
+		WHERE id = ? AND deleted_at IS NULL
+	`
+
+	user := &models.User{}
+	var preferencesJSON []byte
+	var lastLoginAt sql.NullTime
+	var deletedAt sql.NullTime
+
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.FirstName,
+		&user.LastName,
+		&user.Phone,
+		&user.Role,
+		&user.Status,
+		&lastLoginAt,
+		&user.FailedLogins,
+		&user.EmailVerified,
+		&preferencesJSON,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&deletedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.NewNotFoundError("user not found", err)
+		}
+		return nil, errors.NewDatabaseError("failed to get user", err)
+	}
+
+	if lastLoginAt.Valid {
+		user.LastLoginAt = &lastLoginAt.Time
+	}
+	if deletedAt.Valid {
+		user.DeletedAt = &deletedAt.Time
+	}
+
+	if len(preferencesJSON) > 0 {
+		if err := json.Unmarshal(preferencesJSON, &user.Preferences); err != nil {
+			return nil, errors.NewInternalError("failed to unmarshal preferences", err)
+		}
+	}
+	return user, nil
+}
