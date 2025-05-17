@@ -14,13 +14,13 @@ type TokenRepository interface {
 	CreateToken(ctx context.Context, token *models.Token) error
 	
 	// GetTokenByID retrieves a token by its ID
-	GetTokenByID(ctx context.Context, id string) (*models.Token, error)
+	// GetTokenByID(ctx context.Context, id string) (*models.Token, error)
 	
 	// GetTokenByValue retrieves a token by its value (the actual token string)
 	GetTokenByValue(ctx context.Context, value string) (*models.Token, error)
 	
 	// GetTokensByUserID retrieves all tokens for a specific user
-	GetTokensByUserID(ctx context.Context, userID string, tokenType string) ([]*models.Token, error)
+	// GetTokensByUserID(ctx context.Context, userID string, tokenType string) ([]*models.Token, error)
 	
 	// RevokeToken marks a token as revoked
 	RevokeToken(ctx context.Context, tokenID string) error
@@ -29,13 +29,13 @@ type TokenRepository interface {
 	RevokeAllTokensForUser(ctx context.Context, userID string, tokenType string) error
 	
 	// IsTokenRevoked checks if a token is revoked
-	IsTokenRevoked(ctx context.Context, tokenID string) (bool, error)
+	// IsTokenRevoked(ctx context.Context, tokenID string) (bool, error)
 	
 	// DeleteExpiredTokens deletes all expired tokens
 	DeleteExpiredTokens(ctx context.Context) (int, error)
 	
 	// UpdateToken updates a token's properties
-	UpdateToken(ctx context.Context, token *models.Token) error
+	// UpdateToken(ctx context.Context, token *models.Token) error
 }
 
 // SessionRepository defines the interface for session operations
