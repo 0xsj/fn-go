@@ -1,87 +1,210 @@
 services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: fn-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: app
+      MYSQL_USER: ${DB_USER:-appuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-apppassword}
+    ports:
+      - "${DB_PORT_FORWARD:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./infra/db/init:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p$$MYSQL_ROOT_PASSWORD",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+  # NATS Service
   nats:
     image: nats:2.10-alpine
+    container_name: fn-nats
     ports:
-      - "4222:4222"
-      - "8222:8222"
+      - "${NATS_PORT_FORWARD:-4222}:4222"
+      - "${NATS_MONITOR_PORT_FORWARD:-8222}:8222"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8222/varz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - fn-network
 
+  # Auth Service
   auth-service:
     build:
       context: .
       dockerfile: services/auth-service/Dockerfile
+      args:
+        SERVICE_NAME: auth-service
+    container_name: fn-auth-service
     environment:
-      - NATS_URL=nats://nats:4222
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-appuser}
+      - DB_PASSWORD=${DB_PASSWORD:-apppassword}
+      - DB_NAME=${AUTH_DB_NAME:-auth_service}
+      - SERVICE_PORT=${AUTH_SERVICE_PORT:-8080}
+      - JWT_SECRET=${AUTH_SERVICE_JWT_SECRET:-your-secret-key}
+      - TOKEN_EXPIRY=${AUTH_SERVICE_TOKEN_EXPIRY:-24h}
+      - REFRESH_TOKEN_EXPIRY=${AUTH_SERVICE_REFRESH_TOKEN_EXPIRY:-7d}
     depends_on:
-      - nats
+      mysql:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - fn-network
 
-  entity-service:
-    build:
-      context: .
-      dockerfile: services/entity-service/Dockerfile
-    environment:
-      - NATS_URL=nats://nats:4222
-    depends_on:
-      - nats
-
-  incident-service:
-    build:
-      context: .
-      dockerfile: services/incident-service/Dockerfile
-    environment:
-      - NATS_URL=nats://nats:4222
-    depends_on:
-      - nats
-
-  location-service:
-    build:
-      context: .
-      dockerfile: services/location-service/Dockerfile
-    environment:
-      - NATS_URL=nats://nats:4222
-    depends_on:
-      - nats
-
-  monitoring-service:
-    build:
-      context: .
-      dockerfile: services/monitoring-service/Dockerfile
-    environment:
-      - NATS_URL=nats://nats:4222
-    depends_on:
-      - nats
-
-  notification-service:
-    build:
-      context: .
-      dockerfile: services/notification-service/Dockerfile
-    environment:
-      - NATS_URL=nats://nats:4222
-    depends_on:
-      - nats
-
+  # User Service
   user-service:
     build:
       context: .
       dockerfile: services/user-service/Dockerfile
+      args:
+        SERVICE_NAME: user-service
+    container_name: fn-user-service
     environment:
-      - NATS_URL=nats://nats:4222
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-appuser}
+      - DB_PASSWORD=${DB_PASSWORD:-apppassword}
+      - DB_NAME=${USER_DB_NAME:-user_service}
+      - SERVICE_PORT=${USER_SERVICE_PORT:-8080}
+      - DB_MAX_OPEN_CONNS=${DB_MAX_OPEN_CONNS:-25}
+      - DB_MAX_IDLE_CONNS=${DB_MAX_IDLE_CONNS:-5}
+      - DB_CONN_MAX_LIFETIME=${DB_CONN_MAX_LIFETIME:-300}
     depends_on:
-      - nats
+      mysql:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - fn-network
 
+  # API Gateway
   gateway:
     build:
       context: .
       dockerfile: gateway/Dockerfile
+    container_name: fn-gateway
     ports:
-      - "8080:8080"
+      - "${GATEWAY_PORT_FORWARD:-8080}:8080"
     environment:
-      - NATS_URL=nats://nats:4222
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
+      - PORT=${GATEWAY_PORT:-8080}
+      - CORS_ALLOWED_ORIGINS=${GATEWAY_CORS_ALLOWED_ORIGINS:-*}
+      - RATE_LIMIT=${GATEWAY_RATE_LIMIT:-100}
     depends_on:
-      - nats
-      - auth-service
-      - entity-service
-      - incident-service
-      - location-service
-      - monitoring-service
-      - notification-service
+      nats:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+  # Observability stack
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: fn-prometheus
+    volumes:
+      - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT_FORWARD:-9090}:9090"
+    depends_on:
+      - gateway
       - user-service
+      - auth-service
+    networks:
+      - fn-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: fn-grafana
+    volumes:
+      - ./infra/observability/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./infra/observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT_FORWARD:-3000}:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - fn-network
+
+volumes:
+  mysql-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  fn-network:
+    driver: bridge
