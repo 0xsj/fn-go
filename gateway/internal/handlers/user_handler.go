@@ -106,7 +106,7 @@ func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request, id s
 	h.logger.With("user_id", id).Info("Handling get user request")
 	
 	// Proxy the request with a custom transformation to include the ID
-	h.proxy.ProxyRequest(w, r, "user.get", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "user.get", func(r *http.Request) (any, error) {
 		return map[string]string{"id": id}, nil
 	})
 }
@@ -123,7 +123,7 @@ func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request, i
 	}
 	
 	// Parse the request body
-	var updateData map[string]interface{}
+	var updateData map[string]any
 	if err := json.Unmarshal(body, &updateData); err != nil {
 		h.RespondWithError(w, "BAD_REQUEST", "Invalid request data", http.StatusBadRequest)
 		return
@@ -133,7 +133,7 @@ func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request, i
 	updateData["id"] = id
 	
 	// Proxy the request
-	h.proxy.ProxyRequest(w, r, "user.update", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "user.update", func(r *http.Request) (any, error) {
 		return updateData, nil
 	})
 }
@@ -143,7 +143,7 @@ func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request, i
 	h.logger.With("user_id", id).Info("Handling delete user request")
 	
 	// Proxy the request
-	h.proxy.ProxyRequest(w, r, "user.delete", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "user.delete", func(r *http.Request) (any, error) {
 		return map[string]string{"id": id}, nil
 	})
 }
@@ -153,7 +153,7 @@ func (h *UserHandler) handleUserProfile(w http.ResponseWriter, r *http.Request, 
 	switch r.Method {
 	case http.MethodGet:
 		// Get user profile
-		h.proxy.ProxyRequest(w, r, "user.profile.get", func(r *http.Request) (interface{}, error) {
+		h.proxy.ProxyRequest(w, r, "user.profile.get", func(r *http.Request) (any, error) {
 			return map[string]string{"id": id}, nil
 		})
 	case http.MethodPut:
@@ -164,7 +164,7 @@ func (h *UserHandler) handleUserProfile(w http.ResponseWriter, r *http.Request, 
 			return
 		}
 		
-		var profileData map[string]interface{}
+		var profileData map[string]any
 		if err := json.Unmarshal(body, &profileData); err != nil {
 			h.RespondWithError(w, "BAD_REQUEST", "Invalid request data", http.StatusBadRequest)
 			return
@@ -173,7 +173,7 @@ func (h *UserHandler) handleUserProfile(w http.ResponseWriter, r *http.Request, 
 		// Add the ID to the request data
 		profileData["id"] = id
 		
-		h.proxy.ProxyRequest(w, r, "user.profile.update", func(r *http.Request) (interface{}, error) {
+		h.proxy.ProxyRequest(w, r, "user.profile.update", func(r *http.Request) (any, error) {
 			return profileData, nil
 		})
 	default:
@@ -195,7 +195,7 @@ func (h *UserHandler) handleUserPassword(w http.ResponseWriter, r *http.Request,
 		return
 	}
 	
-	var passwordData map[string]interface{}
+	var passwordData map[string]any
 	if err := json.Unmarshal(body, &passwordData); err != nil {
 		h.RespondWithError(w, "BAD_REQUEST", "Invalid request data", http.StatusBadRequest)
 		return
@@ -204,7 +204,7 @@ func (h *UserHandler) handleUserPassword(w http.ResponseWriter, r *http.Request,
 	// Add the ID to the request data
 	passwordData["id"] = id
 	
-	h.proxy.ProxyRequest(w, r, "user.password.update", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "user.password.update", func(r *http.Request) (any, error) {
 		return passwordData, nil
 	})
 }

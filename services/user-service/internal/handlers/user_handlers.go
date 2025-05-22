@@ -49,7 +49,7 @@ func (h *UserHandler) RegisterHandlers(conn *nats.Conn) {
 }
 
 // GetUser handles requests to get a user by ID
-func (h *UserHandler) GetUser(data []byte) (interface{}, error) {
+func (h *UserHandler) GetUser(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "user.get")
 	handlerLogger.Info("Received user.get request")
 	
@@ -94,7 +94,7 @@ func (h *UserHandler) GetUser(data []byte) (interface{}, error) {
 }
 
 // CreateUser handles requests to create a new user
-func (h *UserHandler) CreateUser(data []byte) (interface{}, error) {
+func (h *UserHandler) CreateUser(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "user.create")
 	handlerLogger.Info("Received user.create request")
 	

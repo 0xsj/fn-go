@@ -9,9 +9,9 @@ import (
 	"github.com/0xsj/fn-go/pkg/common/nats"
 )
 
-type RequestHandler func(data []byte) (interface{}, error)
+type RequestHandler func(data []byte) (any, error)
 
-func Request(conn *nats.Conn, subject string, request interface{}, response interface{}, timeout time.Duration, logger log.Logger) error {
+func Request(conn *nats.Conn, subject string, request any, response any, timeout time.Duration, logger log.Logger) error {
 	reqLogger := logger.With("subject", subject).With("operation", "Request")
 	reqLogger.Info("Preparing NATS request")
 	
@@ -72,9 +72,9 @@ func HandleRequest(conn *nats.Conn, subject string, handler RequestHandler, logg
 			// On error, send error response
 			msgLogger.With("error", err.Error()).Error("Request handler failed")
 			
-			errorResponse := map[string]interface{}{
+			errorResponse := map[string]any{
 				"success": false,
-				"error": map[string]interface{}{
+				"error": map[string]any{
 					"message": err.Error(),
 				},
 			}
@@ -97,7 +97,7 @@ func HandleRequest(conn *nats.Conn, subject string, handler RequestHandler, logg
 
 		// Marshal the result
 		msgLogger.Debug("Marshaling success response")
-		responseData, err := json.Marshal(map[string]interface{}{
+		responseData, err := json.Marshal(map[string]any{
 			"success": true,
 			"data":    result,
 		})

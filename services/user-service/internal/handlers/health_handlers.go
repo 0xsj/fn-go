@@ -31,11 +31,11 @@ func (h *HealthHandler) RegisterHandlers(conn *nats.Conn) {
 }
 
 // HealthCheck handles health check requests
-func (h *HealthHandler) HealthCheck(data []byte) (interface{}, error) {
+func (h *HealthHandler) HealthCheck(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "service.user.health")
 	handlerLogger.Info("Received health check request")
 	
-	response := map[string]interface{}{
+	response := map[string]any{
 		"service": "user-service",
 		"status":  "ok",
 		"time":    time.Now().Format(time.RFC3339),
@@ -47,7 +47,7 @@ func (h *HealthHandler) HealthCheck(data []byte) (interface{}, error) {
 }
 
 // TestAuthConnection tests the connection to the auth service
-func (h *HealthHandler) TestAuthConnection(data []byte) (interface{}, error) {
+func (h *HealthHandler) TestAuthConnection(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "service.user.test.auth")
 	handlerLogger.Info("Received request to test auth service connection")
 	
@@ -55,19 +55,19 @@ func (h *HealthHandler) TestAuthConnection(data []byte) (interface{}, error) {
 	conn := nats.GetConnFromContext(handlerLogger)
 	if conn == nil {
 		handlerLogger.Error("NATS connection not found in context")
-		return map[string]interface{}{
+		return map[string]any{
 			"success": false,
 			"error":   "NATS connection not available",
 		}, nil
 	}
 	
 	// Request health check from auth service
-	var authResponse map[string]interface{}
+	var authResponse map[string]any
 	err := patterns.Request(conn, "service.auth.health", struct{}{}, &authResponse, 5*time.Second, h.logger)
 	
 	if err != nil {
 		handlerLogger.With("error", err.Error()).Error("Failed to communicate with auth service")
-		return map[string]interface{}{
+		return map[string]any{
 			"success": false,
 			"error":   "Failed to communicate with auth service: " + err.Error(),
 		}, nil
@@ -76,11 +76,11 @@ func (h *HealthHandler) TestAuthConnection(data []byte) (interface{}, error) {
 	// Get the total number of users
 	userCount := getUserCount()
 	
-	response := map[string]interface{}{
+	response := map[string]any{
 		"success":             true,
 		"message":             "Successfully communicated with auth service",
 		"auth_service_status": authResponse,
-		"user_service": map[string]interface{}{
+		"user_service": map[string]any{
 			"service": "user-service",
 			"time":    time.Now().Format(time.RFC3339),
 			"users":   userCount,

@@ -38,7 +38,7 @@ type Location struct {
     Capacity    int            `json:"capacity,omitempty"`
     Timezone    string         `json:"timezone,omitempty"`
     Tags        []string       `json:"tags,omitempty"`
-    Properties  map[string]interface{} `json:"properties,omitempty"`
+    Properties  map[string]any `json:"properties,omitempty"`
     CreatedAt   time.Time      `json:"created_at"`
     UpdatedAt   time.Time      `json:"updated_at"`
     DeletedAt   *time.Time     `json:"deleted_at,omitempty"`

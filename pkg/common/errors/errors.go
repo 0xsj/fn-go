@@ -169,7 +169,7 @@ func newError(err error, message string, code string, status int, logLevel LogLe
 		Status:     status,
 		LogLevel:   logLevel,
 		StackTrace: captureStackTrace(3, 10),
-		Fields:     make(map[string]interface{}),
+		Fields:     make(map[string]any),
 		Timestamp:  time.Now(),
 	}
 }
@@ -329,7 +329,7 @@ func WrapWith(err error, message string, errType error) error {
 			Status:     appErr.Status,
 			LogLevel:   appErr.LogLevel,
 			StackTrace: captureStackTrace(2, 10),
-			Fields:     make(map[string]interface{}),
+			Fields:     make(map[string]any),
 			Timestamp:  time.Now(),
 		}
 	}

@@ -39,7 +39,7 @@ type MySQLRow struct {
 }
 
 // Scan implements the Row.Scan method
-func (r *MySQLRow) Scan(dest ...interface{}) error {
+func (r *MySQLRow) Scan(dest ...any) error {
 	return r.row.Scan(dest...)
 }
 
@@ -59,7 +59,7 @@ func (r *MySQLRows) Next() bool {
 }
 
 // Scan implements the Rows.Scan method
-func (r *MySQLRows) Scan(dest ...interface{}) error {
+func (r *MySQLRows) Scan(dest ...any) error {
 	return r.rows.Scan(dest...)
 }
 
@@ -79,7 +79,7 @@ type MySQLTx struct {
 }
 
 // Execute implements the Tx.Execute method
-func (t *MySQLTx) Execute(ctx context.Context, query string, args ...interface{}) (int64, error) {
+func (t *MySQLTx) Execute(ctx context.Context, query string, args ...any) (int64, error) {
 	result, err := t.tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
@@ -88,7 +88,7 @@ func (t *MySQLTx) Execute(ctx context.Context, query string, args ...interface{}
 }
 
 // Query implements the Tx.Query method
-func (t *MySQLTx) Query(ctx context.Context, query string, args ...interface{}) (Rows, error) {
+func (t *MySQLTx) Query(ctx context.Context, query string, args ...any) (Rows, error) {
 	rows, err := t.tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (t *MySQLTx) Query(ctx context.Context, query string, args ...interface{}) 
 }
 
 // QueryRow implements the Tx.QueryRow method
-func (t *MySQLTx) QueryRow(ctx context.Context, query string, args ...interface{}) Row {
+func (t *MySQLTx) QueryRow(ctx context.Context, query string, args ...any) Row {
 	return &MySQLRow{row: t.tx.QueryRowContext(ctx, query, args...)}
 }
 
@@ -162,7 +162,7 @@ func NewMySQLDB(logger log.Logger, config MySQLConfig) (DB, error) {
 }
 
 // Execute implements the DB.Execute method
-func (d *MySQLDB) Execute(ctx context.Context, query string, args ...interface{}) (int64, error) {
+func (d *MySQLDB) Execute(ctx context.Context, query string, args ...any) (int64, error) {
 	// Check if we're in a transaction
 	if tx, ok := GetTxFromContext(ctx); ok {
 		return tx.Execute(ctx, query, args...)
@@ -177,7 +177,7 @@ func (d *MySQLDB) Execute(ctx context.Context, query string, args ...interface{}
 }
 
 // Query implements the DB.Query method
-func (d *MySQLDB) Query(ctx context.Context, query string, args ...interface{}) (Rows, error) {
+func (d *MySQLDB) Query(ctx context.Context, query string, args ...any) (Rows, error) {
 	// Check if we're in a transaction
 	if tx, ok := GetTxFromContext(ctx); ok {
 		return tx.Query(ctx, query, args...)
@@ -192,7 +192,7 @@ func (d *MySQLDB) Query(ctx context.Context, query string, args ...interface{}) 
 }
 
 // QueryRow implements the DB.QueryRow method
-func (d *MySQLDB) QueryRow(ctx context.Context, query string, args ...interface{}) Row {
+func (d *MySQLDB) QueryRow(ctx context.Context, query string, args ...any) Row {
 	// Check if we're in a transaction
 	if tx, ok := GetTxFromContext(ctx); ok {
 		return tx.QueryRow(ctx, query, args...)

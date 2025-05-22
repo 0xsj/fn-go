@@ -13,13 +13,13 @@ import (
 // DB is the interface for database operations
 type DB interface {
 	// Execute executes a query without returning rows
-	Execute(ctx context.Context, query string, args ...interface{}) (int64, error)
+	Execute(ctx context.Context, query string, args ...any) (int64, error)
 	
 	// Query executes a query that returns rows
-	Query(ctx context.Context, query string, args ...interface{}) (Rows, error)
+	Query(ctx context.Context, query string, args ...any) (Rows, error)
 	
 	// QueryRow executes a query that returns a single row
-	QueryRow(ctx context.Context, query string, args ...interface{}) Row
+	QueryRow(ctx context.Context, query string, args ...any) Row
 	
 	// BeginTx starts a transaction
 	BeginTx(ctx context.Context) (Tx, error)
@@ -34,13 +34,13 @@ type DB interface {
 // Tx is the interface for database transactions
 type Tx interface {
 	// Execute executes a query within a transaction
-	Execute(ctx context.Context, query string, args ...interface{}) (int64, error)
+	Execute(ctx context.Context, query string, args ...any) (int64, error)
 	
 	// Query executes a query within a transaction
-	Query(ctx context.Context, query string, args ...interface{}) (Rows, error)
+	Query(ctx context.Context, query string, args ...any) (Rows, error)
 	
 	// QueryRow executes a query that returns a single row
-	QueryRow(ctx context.Context, query string, args ...interface{}) Row
+	QueryRow(ctx context.Context, query string, args ...any) Row
 	
 	// Commit commits the transaction
 	Commit() error
@@ -52,7 +52,7 @@ type Tx interface {
 // Row is the interface for a single database row
 type Row interface {
 	// Scan copies values from the row into the provided destinations
-	Scan(dest ...interface{}) error
+	Scan(dest ...any) error
 }
 
 // Rows is the interface for database query results
@@ -63,7 +63,7 @@ type Rows interface {
 	Next() bool
 	
 	// Scan copies values from the current row
-	Scan(dest ...interface{}) error
+	Scan(dest ...any) error
 	
 	// Columns returns the column names
 	Columns() ([]string, error)

@@ -113,14 +113,14 @@ func (r *TokenRepository) RevokeToken(ctx context.Context, tokenID string) error
 
 func (r *TokenRepository) RevokeAllTokensForUser(ctx context.Context, userID string, tokenType string) error {
 	var query string
-	var args []interface{}
+	var args []any
 	
 	if tokenType != "" {
 		query = `UPDATE tokens SET revoked_at = ? WHERE user_id = ? AND type = ? AND revoked_at IS NULL`
-		args = []interface{}{time.Now(), userID, tokenType}
+		args = []any{time.Now(), userID, tokenType}
 	} else {
 		query = `UPDATE tokens SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL`
-		args = []interface{}{time.Now(), userID}
+		args = []any{time.Now(), userID}
 	}
 	
 	_, err := r.db.ExecContext(ctx, query, args...)

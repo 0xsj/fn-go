@@ -23,7 +23,7 @@ func NewUserValidator(logger log.Logger) *UserValidator {
 }
 
 // Validate validates the provided data
-func (v *UserValidator) Validate(data interface{}) error {
+func (v *UserValidator) Validate(data any) error {
 	// Apply specific validation logic based on the data type
 	switch typedData := data.(type) {
 	case models.UserCreateRequest:
