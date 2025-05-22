@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/0xsj/fn-go/pkg/common/errors"
 	"github.com/0xsj/fn-go/pkg/common/log"
 	"github.com/0xsj/fn-go/pkg/models"
+	"github.com/0xsj/fn-go/services/user-service/internal/domain"
 	"github.com/0xsj/fn-go/services/user-service/internal/dto"
 	"github.com/0xsj/fn-go/services/user-service/internal/repository"
 )
@@ -49,7 +49,7 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 
 	// Check if user with the same ID already exists
 	if _, exists := r.users[user.ID]; exists {
-		return errors.NewConflictError("User already exists", nil)
+		return domain.NewUserAlreadyExistsError(user.ID)
 	}
 
 	// Make a copy of the user
@@ -66,7 +66,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
 
 	user, exists := r.users[id]
 	if !exists {
-		return nil, errors.NewNotFoundError("User not found", nil)
+		return nil, domain.NewUserNotFoundError(id)
 	}
 
 	// Make a copy of the user to prevent outside modifications
@@ -87,7 +87,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
 		}
 	}
 
-	return nil, errors.NewNotFoundError("User not found", nil)
+	return nil, domain.NewUserNotFoundError(email)
 }
 
 // GetByUsername retrieves a user by username
@@ -103,7 +103,7 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*m
 		}
 	}
 
-	return nil, errors.NewNotFoundError("User not found", nil)
+	return nil, domain.NewUserNotFoundError(username)
 }
 
 // Update updates an existing user
@@ -112,7 +112,7 @@ func (r *UserRepository) Update(ctx context.Context, user *models.User) error {
 	defer r.mutex.Unlock()
 
 	if _, exists := r.users[user.ID]; !exists {
-		return errors.NewNotFoundError("User not found", nil)
+		return domain.NewUserNotFoundError(user.ID)
 	}
 
 	// Make a copy of the user
@@ -128,7 +128,7 @@ func (r *UserRepository) Delete(ctx context.Context, id string) error {
 	defer r.mutex.Unlock()
 
 	if _, exists := r.users[id]; !exists {
-		return errors.NewNotFoundError("User not found", nil)
+		return domain.NewUserNotFoundError(id)
 	}
 
 	delete(r.users, id)
@@ -156,37 +156,109 @@ func (r *UserRepository) List(ctx context.Context, filter dto.ListUsersRequest) 
 // Implement other repository methods as stubs for now
 
 func (r *UserRepository) AssignRole(ctx context.Context, userID string, role string) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	if _, exists := r.users[userID]; !exists {
+		return domain.NewUserNotFoundError(userID)
+	}
+
+	// TODO: Implement role assignment logic
 	return nil
 }
 
 func (r *UserRepository) RemoveRole(ctx context.Context, userID string, role string) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	if _, exists := r.users[userID]; !exists {
+		return domain.NewUserNotFoundError(userID)
+	}
+
+	// TODO: Implement role removal logic
 	return nil
 }
 
 func (r *UserRepository) GetRoles(ctx context.Context, userID string) ([]string, error) {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
+	if _, exists := r.users[userID]; !exists {
+		return nil, domain.NewUserNotFoundError(userID)
+	}
+
+	// TODO: Implement role retrieval logic
 	return []string{}, nil
 }
 
 func (r *UserRepository) UpdatePassword(ctx context.Context, userID string, hashedPassword string) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	if _, exists := r.users[userID]; !exists {
+		return domain.NewUserNotFoundError(userID)
+	}
+
+	// TODO: Implement password update logic
 	return nil
 }
 
 func (r *UserRepository) UpdateLastLoginAt(ctx context.Context, userID string, loginTime time.Time) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	if _, exists := r.users[userID]; !exists {
+		return domain.NewUserNotFoundError(userID)
+	}
+
+	// TODO: Implement last login update logic
 	return nil
 }
 
 func (r *UserRepository) IncrementFailedLogins(ctx context.Context, userID string) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	if _, exists := r.users[userID]; !exists {
+		return domain.NewUserNotFoundError(userID)
+	}
+
+	// TODO: Implement failed login increment logic
 	return nil
 }
 
 func (r *UserRepository) ResetFailedLogins(ctx context.Context, userID string) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	if _, exists := r.users[userID]; !exists {
+		return domain.NewUserNotFoundError(userID)
+	}
+
+	// TODO: Implement failed login reset logic
 	return nil
 }
 
 func (r *UserRepository) SetEmailVerified(ctx context.Context, userID string, verified bool) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	if _, exists := r.users[userID]; !exists {
+		return domain.NewUserNotFoundError(userID)
+	}
+
+	// TODO: Implement email verification logic
 	return nil
 }
 
 func (r *UserRepository) UpdatePreferences(ctx context.Context, userID string, preferences models.UserPreferences) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	if _, exists := r.users[userID]; !exists {
+		return domain.NewUserNotFoundError(userID)
+	}
+
+	// TODO: Implement preferences update logic
 	return nil
 }
