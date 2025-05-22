@@ -2,8 +2,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/0xsj/fn-go/pkg/common/errors"
 )
 
@@ -84,8 +82,8 @@ func init() {
 // NewTokenNotFoundError creates a new token not found error
 func NewTokenNotFoundError(tokenID string) error {
 	return errors.ErrorFromCode(ErrCodeTokenNotFound,
-		fmt.Sprintf("Token with ID %s not found", tokenID),
-		errors.ErrNotFound)
+		"Token not found",
+		errors.ErrNotFound).WithField("tokenID", tokenID)
 }
 
 // NewTokenExpiredError creates a new token expired error
@@ -112,8 +110,8 @@ func NewInvalidTokenError() error {
 // NewSessionNotFoundError creates a new session not found error
 func NewSessionNotFoundError(sessionID string) error {
 	return errors.ErrorFromCode(ErrCodeSessionNotFound,
-		fmt.Sprintf("Session with ID %s not found", sessionID),
-		errors.ErrNotFound)
+		"Session not found",
+		errors.ErrNotFound).WithField("sessionID", sessionID)
 }
 
 // NewSessionExpiredError creates a new session expired error
@@ -126,15 +124,17 @@ func NewSessionExpiredError() error {
 // NewPermissionDeniedError creates a new permission denied error
 func NewPermissionDeniedError(userID, permission string) error {
 	return errors.ErrorFromCode(ErrCodePermissionDenied,
-		fmt.Sprintf("User %s does not have permission %s", userID, permission),
-		errors.ErrForbidden)
+		"Permission denied",
+		errors.ErrForbidden).
+		WithField("userID", userID).
+		WithField("permission", permission)
 }
 
 // NewPermissionNotFoundError creates a new permission not found error
 func NewPermissionNotFoundError(permissionID string) error {
 	return errors.ErrorFromCode(ErrCodePermissionNotFound,
-		fmt.Sprintf("Permission with ID %s not found", permissionID),
-		errors.ErrNotFound)
+		"Permission not found",
+		errors.ErrNotFound).WithField("permissionID", permissionID)
 }
 
 // NewInvalidCredentialsError creates a new invalid credentials error
@@ -146,9 +146,13 @@ func NewInvalidCredentialsError() error {
 
 // NewInvalidAuthInputError creates a new invalid auth input error
 func NewInvalidAuthInputError(message string, err error) error {
-	return errors.ErrorFromCode(ErrCodeInvalidAuthInput,
-		message,
-		errors.ErrValidationFailed).WithField("error_details", err)
+	return errors.ErrorFromCode(ErrCodeInvalidAuthInput, message, err)
+}
+
+// NewInvalidAuthInputWithValidation creates a new invalid auth input error with validation details
+func NewInvalidAuthInputWithValidation(message string, validationErrors map[string]string) error {
+	return errors.ErrorFromCode(ErrCodeInvalidAuthInput, message, errors.ErrValidationFailed).
+		WithField("validation_errors", validationErrors)
 }
 
 // NewTooManyRequestsError creates a new rate limit error
@@ -213,8 +217,17 @@ func Wrap(err error, message string) error {
 	return errors.Wrap(err, message)
 }
 
-// GetAppError from error interface if it is one
-func GetAppError(err error) (*errors.AppError, bool) {
-	appErr, ok := err.(*errors.AppError)
-	return appErr, ok
+// WithOperation adds operation context to an error if it's an AppError
+func WithOperation(err error, operation string) error {
+	return errors.WithOperation(err, operation)
+}
+
+// WithField adds a field to an error if it's an AppError
+func WithField(err error, key string, value any) error {
+	return errors.WithField(err, key, value)
+}
+
+// WithFields adds multiple fields to an error if it's an AppError
+func WithFields(err error, fields map[string]any) error {
+	return errors.WithFields(err, fields)
 }
