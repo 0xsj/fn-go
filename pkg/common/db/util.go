@@ -8,13 +8,13 @@ import (
 )
 
 // BuildWhereClause builds a WHERE clause from filters
-func BuildWhereClause(filters map[string]interface{}) (string, []interface{}) {
+func BuildWhereClause(filters map[string]any) (string, []any) {
 	if len(filters) == 0 {
 		return "", nil
 	}
 	
 	var clauses []string
-	var args []interface{}
+	var args []any
 	
 	for field, value := range filters {
 		// Handle nil values (IS NULL)
@@ -24,7 +24,7 @@ func BuildWhereClause(filters map[string]interface{}) (string, []interface{}) {
 		}
 		
 		// Handle slices (IN)
-		if values, ok := value.([]interface{}); ok && len(values) > 0 {
+		if values, ok := value.([]any); ok && len(values) > 0 {
 			placeholders := make([]string, len(values))
 			for i := range placeholders {
 				placeholders[i] = "?"
@@ -75,9 +75,9 @@ func BuildLimitOffsetClause(limit, offset int) string {
 }
 
 // BuildQueryClauses builds complete query clauses
-func BuildQueryClauses(filters map[string]interface{}, sorts []SortOption, limit, offset int) (string, []interface{}) {
+func BuildQueryClauses(filters map[string]any, sorts []SortOption, limit, offset int) (string, []any) {
 	var clauses []string
-	var args []interface{}
+	var args []any
 	
 	// WHERE clause
 	whereClause, whereArgs := BuildWhereClause(filters)
@@ -102,19 +102,19 @@ func BuildQueryClauses(filters map[string]interface{}, sorts []SortOption, limit
 }
 
 // ScanRowsToMap scans SQL rows into maps
-func ScanRowsToMap(rows *sql.Rows) ([]map[string]interface{}, error) {
+func ScanRowsToMap(rows *sql.Rows) ([]map[string]any, error) {
 	columns, err := rows.Columns()
 	if err != nil {
 		return nil, err
 	}
 	
-	var results []map[string]interface{}
+	var results []map[string]any
 	
 	for rows.Next() {
-		// Create a slice of interface{} to hold the values
-		values := make([]interface{}, len(columns))
+		// Create a slice of any to hold the values
+		values := make([]any, len(columns))
 		// Create a slice of pointers to those values
-		scanArgs := make([]interface{}, len(columns))
+		scanArgs := make([]any, len(columns))
 		for i := range values {
 			scanArgs[i] = &values[i]
 		}
@@ -125,7 +125,7 @@ func ScanRowsToMap(rows *sql.Rows) ([]map[string]interface{}, error) {
 		}
 		
 		// Create the map and store values
-		result := make(map[string]interface{})
+		result := make(map[string]any)
 		for i, col := range columns {
 			val := values[i]
 			

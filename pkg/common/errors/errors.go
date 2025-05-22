@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"errors"
+	stderrors "errors"
 	"fmt"
 	"maps"
 	"net/http"
@@ -11,17 +11,17 @@ import (
 )
 
 var (
-	ErrInvalidInput     = errors.New("invalid input")
-	ErrUnauthorized     = errors.New("unauthorized")
-	ErrForbidden        = errors.New("forbidden")
-	ErrNotFound         = errors.New("resource not found")
-	ErrInternalServer   = errors.New("internal server error")
-	ErrDuplicateEntry   = errors.New("duplicate entry")
-	ErrValidationFailed = errors.New("validation failed")
-	ErrDatabase         = errors.New("database error")
-	ErrExternalService  = errors.New("external service error")
-	ErrRateLimited      = errors.New("rate limited")
-	ErrInvalidURL       = errors.New("invalid URL format")
+	ErrInvalidInput     = stderrors.New("invalid input")
+	ErrUnauthorized     = stderrors.New("unauthorized")
+	ErrForbidden        = stderrors.New("forbidden")
+	ErrNotFound         = stderrors.New("resource not found")
+	ErrInternalServer   = stderrors.New("internal server error")
+	ErrDuplicateEntry   = stderrors.New("duplicate entry")
+	ErrValidationFailed = stderrors.New("validation failed")
+	ErrDatabase         = stderrors.New("database error")
+	ErrExternalService  = stderrors.New("external service error")
+	ErrRateLimited      = stderrors.New("rate limited")
+	ErrInvalidURL       = stderrors.New("invalid URL format")
 )
 
 type LogLevel int
@@ -72,7 +72,7 @@ func (e *AppError) Is(target error) bool {
 	if e.Err == nil {
 		return false
 	}
-	return errors.Is(e.Err, target)
+	return stderrors.Is(e.Err, target)
 }
 
 func (e *AppError) WithField(key string, value any) *AppError {
@@ -169,7 +169,7 @@ func newError(err error, message string, code string, status int, logLevel LogLe
 		Status:     status,
 		LogLevel:   logLevel,
 		StackTrace: captureStackTrace(3, 10),
-		Fields:     make(map[string]interface{}),
+		Fields:     make(map[string]any),
 		Timestamp:  time.Now(),
 	}
 }
@@ -222,6 +222,52 @@ func CustomError(message string, err error, code string, status int, logLevel Lo
 	return newError(err, message, code, status, logLevel)
 }
 
+// NEW: Enhanced constructors with fields support
+func ErrorFromCodeWithFields(code string, message string, err error, fields map[string]any) *AppError {
+	appErr := ErrorFromCode(code, message, err)
+	if fields != nil {
+		appErr = appErr.WithFields(fields)
+	}
+	return appErr
+}
+
+func NewValidationErrorWithFields(message string, err error, fields map[string]any) *AppError {
+	appErr := NewValidationError(message, err)
+	if fields != nil {
+		appErr = appErr.WithFields(fields)
+	}
+	return appErr
+}
+
+// NEW: Generic helper to safely extract AppError
+func AsAppError(err error) (*AppError, bool) {
+	var appErr *AppError
+	ok := stderrors.As(err, &appErr)
+	return appErr, ok
+}
+
+// NEW: Safe field addition functions that work with any error
+func WithField(err error, key string, value any) error {
+	if appErr, ok := AsAppError(err); ok {
+		return appErr.WithField(key, value)
+	}
+	return err
+}
+
+func WithFields(err error, fields map[string]any) error {
+	if appErr, ok := AsAppError(err); ok {
+		return appErr.WithFields(fields)
+	}
+	return err
+}
+
+func WithOperation(err error, operation string) error {
+	if appErr, ok := AsAppError(err); ok {
+		return appErr.WithOperation(operation)
+	}
+	return err
+}
+
 func RegisterErrorCode(code string, factory func(message string, err error) *AppError) {
 	errorFactories[code] = factory
 }
@@ -259,7 +305,7 @@ func Wrap(err error, message string) error {
 	}
 
 	var appErr *AppError
-	if errors.As(err, &appErr) {
+	if stderrors.As(err, &appErr) {
 		if message != "" {
 			appErr.Message = message + ": " + appErr.Message
 		}
@@ -275,7 +321,7 @@ func WrapWith(err error, message string, errType error) error {
 	}
 
 	var appErr *AppError
-	if errors.As(errType, &appErr) {
+	if stderrors.As(errType, &appErr) {
 		return &AppError{
 			Err:        err,
 			Message:    message,
@@ -283,7 +329,7 @@ func WrapWith(err error, message string, errType error) error {
 			Status:     appErr.Status,
 			LogLevel:   appErr.LogLevel,
 			StackTrace: captureStackTrace(2, 10),
-			Fields:     make(map[string]interface{}),
+			Fields:     make(map[string]any),
 			Timestamp:  time.Now(),
 		}
 	}
@@ -292,7 +338,7 @@ func WrapWith(err error, message string, errType error) error {
 
 func IsErrorCode(err error, code string) bool {
 	var appErr *AppError
-	return errors.As(err, &appErr) && appErr.Code == code
+	return stderrors.As(err, &appErr) && appErr.Code == code
 }
 
 func IsNotFound(err error) bool {

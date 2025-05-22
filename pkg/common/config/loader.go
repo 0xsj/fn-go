@@ -183,7 +183,7 @@ func (p *EnvProvider) formatKey(key string) string {
 
 // FileProvider loads configuration from a file
 type FileProvider struct {
-	data         map[string]interface{}
+	data         map[string]any
 	requiredVars []string
 	missingVars  []string
 }
@@ -196,7 +196,7 @@ func NewJSONFileProvider(filepath string) (*FileProvider, error) {
 	}
 	defer file.Close()
 	
-	var data map[string]interface{}
+	var data map[string]any
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&data); err != nil {
 		return nil, fmt.Errorf("failed to decode JSON: %w", err)
@@ -389,7 +389,7 @@ func (p *FileProvider) GetSlice(key string, separator string) []string {
 	}
 	
 	// If it's already an array in the JSON, use that
-	if arr, ok := value.([]interface{}); ok {
+	if arr, ok := value.([]any); ok {
 		result := make([]string, len(arr))
 		for i, v := range arr {
 			result[i] = fmt.Sprintf("%v", v)
@@ -412,13 +412,13 @@ func (p *FileProvider) GetSlice(key string, separator string) []string {
 }
 
 // getPath retrieves a value from a nested path (e.g., "database.connection.host")
-func (p *FileProvider) getPath(path string) (interface{}, bool) {
+func (p *FileProvider) getPath(path string) (any, bool) {
 	parts := strings.Split(path, ".")
-	var current interface{} = p.data
+	var current any = p.data
 	
 	for _, part := range parts {
 		// Try to convert to map
-		currentMap, ok := current.(map[string]interface{})
+		currentMap, ok := current.(map[string]any)
 		if !ok {
 			return nil, false
 		}
@@ -440,7 +440,7 @@ func (p *FileProvider) hasPath(path string) bool {
 }
 
 // LoadJSONFile loads a configuration from a JSON file
-func LoadJSONFile(filepath string, cfg interface{}) error {
+func LoadJSONFile(filepath string, cfg any) error {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return fmt.Errorf("failed to open config file: %w", err)

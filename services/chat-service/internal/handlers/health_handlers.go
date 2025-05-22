@@ -28,11 +28,11 @@ func (h *HealthHandler) RegisterHandlers(conn *nats.Conn) {
 }
 
 // HealthCheck handles health check requests
-func (h *HealthHandler) HealthCheck(data []byte) (interface{}, error) {
+func (h *HealthHandler) HealthCheck(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "service.chat.health")
 	handlerLogger.Info("Received health check request")
 	
-	response := map[string]interface{}{
+	response := map[string]any{
 		"service": "chat-service",
 		"status":  "ok",
 		"time":    time.Now().Format(time.RFC3339),

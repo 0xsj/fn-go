@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/0xsj/fn-go/pkg/common/errors"
 	"github.com/0xsj/fn-go/pkg/common/log"
 	"github.com/0xsj/fn-go/pkg/common/nats"
 	"github.com/0xsj/fn-go/pkg/common/nats/patterns"
+	"github.com/0xsj/fn-go/services/user-service/internal/domain"
 	"github.com/0xsj/fn-go/services/user-service/internal/dto"
 	"github.com/0xsj/fn-go/services/user-service/internal/service"
 	"github.com/0xsj/fn-go/services/user-service/pkg/metrics"
@@ -49,7 +49,7 @@ func (h *UserHandler) RegisterHandlers(conn *nats.Conn) {
 }
 
 // GetUser handles requests to get a user by ID
-func (h *UserHandler) GetUser(data []byte) (interface{}, error) {
+func (h *UserHandler) GetUser(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "user.get")
 	handlerLogger.Info("Received user.get request")
 	
@@ -69,7 +69,7 @@ func (h *UserHandler) GetUser(data []byte) (interface{}, error) {
 	if err := json.Unmarshal(data, &req); err != nil {
 		handlerLogger.With("error", err.Error()).Error("Failed to unmarshal request")
 		metrics.RequestDurationHistogram.WithLabelValues("GetUser", "error").Observe(time.Since(startTime).Seconds())
-		return nil, errors.NewBadRequestError("Invalid request format", err)
+		return nil, domain.NewInvalidUserInputError("Invalid request format", err)
 	}
 
 	handlerLogger = handlerLogger.With("user_id", req.ID)
@@ -78,7 +78,7 @@ func (h *UserHandler) GetUser(data []byte) (interface{}, error) {
 	if req.ID == "" {
 		handlerLogger.Warn("Empty user ID provided")
 		metrics.RequestDurationHistogram.WithLabelValues("GetUser", "error").Observe(time.Since(startTime).Seconds())
-		return nil, errors.NewBadRequestError("User ID is required", nil)
+		return nil, domain.NewInvalidUserInputError("User ID is required", nil)
 	}
 
 	// Use real service to get user
@@ -94,7 +94,7 @@ func (h *UserHandler) GetUser(data []byte) (interface{}, error) {
 }
 
 // CreateUser handles requests to create a new user
-func (h *UserHandler) CreateUser(data []byte) (interface{}, error) {
+func (h *UserHandler) CreateUser(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "user.create")
 	handlerLogger.Info("Received user.create request")
 	
@@ -111,14 +111,14 @@ func (h *UserHandler) CreateUser(data []byte) (interface{}, error) {
 	if err := json.Unmarshal(data, &createReq); err != nil {
 		handlerLogger.With("error", err.Error()).Error("Failed to unmarshal user data")
 		metrics.RequestDurationHistogram.WithLabelValues("CreateUser", "error").Observe(time.Since(startTime).Seconds())
-		return nil, errors.NewBadRequestError("Invalid user data", err)
+		return nil, domain.NewInvalidUserInputError("Invalid user data", err)
 	}
 
 	// Add some basic validation
 	if createReq.Username == "" || createReq.Email == "" || createReq.Password == "" {
 		handlerLogger.Warn("Missing required fields")
 		metrics.RequestDurationHistogram.WithLabelValues("CreateUser", "error").Observe(time.Since(startTime).Seconds())
-		return nil, errors.NewBadRequestError("Username, email, and password are required", nil)
+		return nil, domain.NewInvalidUserInputError("Username, email, and password are required", nil)
 	}
 
 	handlerLogger = handlerLogger.With("username", createReq.Username).With("email", createReq.Email)
@@ -135,5 +135,3 @@ func (h *UserHandler) CreateUser(data []byte) (interface{}, error) {
 	handlerLogger.With("user_id", user.ID).Info("User created successfully")
 	return user, nil
 }
-
-// Implement other handler methods...

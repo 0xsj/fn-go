@@ -2,7 +2,6 @@
 package validation
 
 import (
-	"github.com/0xsj/fn-go/pkg/common/errors"
 	"github.com/0xsj/fn-go/pkg/common/log"
 	"github.com/0xsj/fn-go/pkg/models"
 	"github.com/0xsj/fn-go/services/user-service/internal/domain"
@@ -24,7 +23,7 @@ func NewUserValidator(logger log.Logger) *UserValidator {
 }
 
 // Validate validates the provided data
-func (v *UserValidator) Validate(data interface{}) error {
+func (v *UserValidator) Validate(data any) error {
 	// Apply specific validation logic based on the data type
 	switch typedData := data.(type) {
 	case models.UserCreateRequest:
@@ -100,10 +99,7 @@ func (v *UserValidator) validateCreateUser(req models.UserCreateRequest) error {
 
 	// Return validation errors if any
 	if ve.HasErrors() {
-		return domain.NewInvalidUserInputError("Validation failed", errors.NewValidationError(
-			ve.Error(),
-			nil,
-		).WithField("validation_errors", ve.ToMap()))
+		return domain.NewInvalidUserInputWithValidation("Validation failed", ve.ToMap())
 	}
 
 	return nil
@@ -146,10 +142,7 @@ func (v *UserValidator) validateUpdateUser(req models.UserUpdateRequest) error {
 
 	// Return validation errors if any
 	if ve.HasErrors() {
-		return domain.NewInvalidUserInputError("Validation failed", errors.NewValidationError(
-			ve.Error(),
-			nil,
-		).WithField("validation_errors", ve.ToMap()))
+		return domain.NewInvalidUserInputWithValidation("Validation failed", ve.ToMap())
 	}
 
 	return nil
@@ -186,10 +179,7 @@ func (v *UserValidator) validateUpdatePassword(req dto.UpdatePasswordRequest) er
 
 	// Return validation errors if any
 	if ve.HasErrors() {
-		return domain.NewInvalidUserInputError("Validation failed", errors.NewValidationError(
-			ve.Error(),
-			nil,
-		).WithField("validation_errors", ve.ToMap()))
+		return domain.NewInvalidUserInputWithValidation("Validation failed", ve.ToMap())
 	}
 
 	return nil
@@ -217,10 +207,7 @@ func (v *UserValidator) validateListUsers(req dto.ListUsersRequest) error {
 
 	// Return validation errors if any
 	if ve.HasErrors() {
-		return domain.NewInvalidUserInputError("Validation failed", errors.NewValidationError(
-			ve.Error(),
-			nil,
-		).WithField("validation_errors", ve.ToMap()))
+		return domain.NewInvalidUserInputWithValidation("Validation failed", ve.ToMap())
 	}
 
 	return nil

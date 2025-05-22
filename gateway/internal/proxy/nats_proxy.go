@@ -39,7 +39,7 @@ func (p *NATSProxy) WithTimeout(timeout time.Duration) *NATSProxy {
 }
 
 // ProxyRequest proxies an HTTP request to a NATS subject
-func (p *NATSProxy) ProxyRequest(w http.ResponseWriter, r *http.Request, subject string, transformRequest func(r *http.Request) (interface{}, error)) {
+func (p *NATSProxy) ProxyRequest(w http.ResponseWriter, r *http.Request, subject string, transformRequest func(r *http.Request) (any, error)) {
 	logger := p.logger.With("subject", subject).With("method", r.Method).With("path", r.URL.Path)
 	logger.Info("Proxying request to NATS subject")
 	
@@ -47,7 +47,7 @@ func (p *NATSProxy) ProxyRequest(w http.ResponseWriter, r *http.Request, subject
 	start := time.Now()
 	
 	// Transform the request or use the default transformation
-	var requestData interface{}
+	var requestData any
 	var err error
 	
 	if transformRequest != nil {
@@ -76,7 +76,7 @@ func (p *NATSProxy) ProxyRequest(w http.ResponseWriter, r *http.Request, subject
 			
 			// If body is not empty, try to parse it as JSON
 			if len(body) > 0 {
-				var jsonData map[string]interface{}
+				var jsonData map[string]any
 				if err := json.Unmarshal(body, &jsonData); err != nil {
 					// If it's not valid JSON, use the raw body
 					requestData = body
@@ -86,7 +86,7 @@ func (p *NATSProxy) ProxyRequest(w http.ResponseWriter, r *http.Request, subject
 			}
 		} else {
 			// For GET requests, use query parameters
-			queryParams := make(map[string]interface{})
+			queryParams := make(map[string]any)
 			for key, values := range r.URL.Query() {
 				if len(values) == 1 {
 					queryParams[key] = values[0]
@@ -101,8 +101,8 @@ func (p *NATSProxy) ProxyRequest(w http.ResponseWriter, r *http.Request, subject
 	// Make the NATS request
 	var result struct {
 		Success bool        `json:"success"`
-		Data    interface{} `json:"data,omitempty"`
-		Error   interface{} `json:"error,omitempty"`
+		Data    any `json:"data,omitempty"`
+		Error   any `json:"error,omitempty"`
 	}
 	
 	logger.With("request_data", requestData).Debug("Sending NATS request")

@@ -38,7 +38,7 @@ func (h *LocationHandler) RegisterHandlers(conn *nats.Conn) {
 }
 
 // GetLocation handles requests to get a location by ID
-func (h *LocationHandler) GetLocation(data []byte) (interface{}, error) {
+func (h *LocationHandler) GetLocation(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "location.get")
 	handlerLogger.Info("Received location.get request")
 	
@@ -86,7 +86,7 @@ func (h *LocationHandler) GetLocation(data []byte) (interface{}, error) {
 }
 
 // ListLocations handles requests to list all locations
-func (h *LocationHandler) ListLocations(data []byte) (interface{}, error) {
+func (h *LocationHandler) ListLocations(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "location.list")
 	handlerLogger.Info("Received location.list request")
 	
@@ -131,7 +131,7 @@ func (h *LocationHandler) ListLocations(data []byte) (interface{}, error) {
 }
 
 // CreateLocation handles requests to create a new location
-func (h *LocationHandler) CreateLocation(data []byte) (interface{}, error) {
+func (h *LocationHandler) CreateLocation(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "location.create")
 	handlerLogger.Info("Received location.create request")
 	

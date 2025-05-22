@@ -38,7 +38,7 @@ func (h *NotificationHandler) RegisterHandlers(conn *nats.Conn) {
 }
 
 // SendNotification handles requests to send a notification
-func (h *NotificationHandler) SendNotification(data []byte) (interface{}, error) {
+func (h *NotificationHandler) SendNotification(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "notification.send")
 	handlerLogger.Info("Received notification.send request")
 	
@@ -93,7 +93,7 @@ func (h *NotificationHandler) SendNotification(data []byte) (interface{}, error)
 }
 
 // GetNotification handles requests to get a notification by ID
-func (h *NotificationHandler) GetNotification(data []byte) (interface{}, error) {
+func (h *NotificationHandler) GetNotification(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "notification.get")
 	handlerLogger.Info("Received notification.get request")
 	
@@ -149,7 +149,7 @@ func (h *NotificationHandler) GetNotification(data []byte) (interface{}, error) 
 }
 
 // ListNotifications handles requests to list notifications
-func (h *NotificationHandler) ListNotifications(data []byte) (interface{}, error) {
+func (h *NotificationHandler) ListNotifications(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "notification.list")
 	handlerLogger.Info("Received notification.list request")
 	

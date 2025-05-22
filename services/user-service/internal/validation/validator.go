@@ -54,7 +54,7 @@ func (ve ValidationErrors) ToMap() map[string]string {
 // Validator defines the interface for validating data
 type Validator interface {
 	// Validate validates the provided data and returns an error if validation fails
-	Validate(data interface{}) error
+	Validate(data any) error
 }
 
 // BaseValidator implements the Validator interface
@@ -70,7 +70,7 @@ func NewBaseValidator(logger log.Logger) *BaseValidator {
 }
 
 // Validate validates the provided data against validation rules
-func (v *BaseValidator) Validate(data interface{}) error {
+func (v *BaseValidator) Validate(data any) error {
 	return nil // Base validator doesn't do anything
 }
 
@@ -211,7 +211,7 @@ func NoWhitespace(value string, fieldName string) (ValidationError, bool) {
 }
 
 // GetField gets a field value from a struct using reflection
-func GetField(data interface{}, fieldName string) (interface{}, bool) {
+func GetField(data any, fieldName string) (any, bool) {
 	val := reflect.ValueOf(data)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()

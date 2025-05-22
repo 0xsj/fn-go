@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/0xsj/fn-go/pkg/common/db"
-	"github.com/0xsj/fn-go/pkg/common/errors"
 	"github.com/0xsj/fn-go/pkg/common/log"
 	"github.com/0xsj/fn-go/pkg/models"
+	"github.com/0xsj/fn-go/services/user-service/internal/domain"
 	"github.com/0xsj/fn-go/services/user-service/internal/repository"
 )
 
@@ -37,7 +37,7 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 
 	preferencesJSON, err := json.Marshal(user.Preferences)
 	if err != nil {
-		return errors.NewInternalError("failed to marshal preferences", err)
+		return domain.NewInvalidUserInputError("Failed to process user preferences", err)
 	}
 
 	// Use Execute instead of ExecContext
@@ -62,14 +62,14 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 	if err != nil {
 		if strings.Contains(err.Error(), "Duplicate entry") {
 			if strings.Contains(err.Error(), "users.username") {
-				return errors.NewConflictError("username already exists", err)
+				return domain.NewUserAlreadyExistsError(user.Username)
 			}
 			if strings.Contains(err.Error(), "users.email") {
-				return errors.NewConflictError("email already exists", err)
+				return domain.NewUserAlreadyExistsError(user.Email)
 			}
-			return errors.NewConflictError("user already exists", err)
+			return domain.NewUserAlreadyExistsError(user.ID)
 		}
-		return errors.NewDatabaseError("failed to create user", err)
+		return domain.Wrap(err, "Failed to create user in database")
 	}
 	return nil
 }
@@ -111,9 +111,9 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.NewNotFoundError("user not found", err)
+			return nil, domain.NewUserNotFoundError(id)
 		}
-		return nil, errors.NewDatabaseError("failed to get user", err)
+		return nil, domain.Wrap(err, "Failed to get user from database")
 	}
 
 	if lastLoginAt.Valid {
@@ -125,7 +125,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
 
 	if len(preferencesJSON) > 0 {
 		if err := json.Unmarshal(preferencesJSON, &user.Preferences); err != nil {
-			return nil, errors.NewInternalError("failed to unmarshal preferences", err)
+			return nil, domain.NewInvalidUserInputError("Failed to process user preferences", err)
 		}
 	}
 	return user, nil
@@ -168,9 +168,9 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
     
     if err != nil {
         if err == sql.ErrNoRows {
-            return nil, errors.NewNotFoundError("user not found", err)
+            return nil, domain.NewUserNotFoundError(email)
         }
-        return nil, errors.NewDatabaseError("failed to get user by email", err)
+        return nil, domain.Wrap(err, "Failed to get user by email from database")
     }
     
     // Set nullable fields
@@ -184,7 +184,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
     // Deserialize preferences
     if len(preferencesJSON) > 0 {
         if err := json.Unmarshal(preferencesJSON, &user.Preferences); err != nil {
-            return nil, errors.NewInternalError("failed to unmarshal preferences", err)
+            return nil, domain.NewInvalidUserInputError("Failed to process user preferences", err)
         }
     }
     
@@ -229,9 +229,9 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*m
     
     if err != nil {
         if err == sql.ErrNoRows {
-            return nil, errors.NewNotFoundError("user not found", err)
+            return nil, domain.NewUserNotFoundError(username)
         }
-        return nil, errors.NewDatabaseError("failed to get user by username", err)
+        return nil, domain.Wrap(err, "Failed to get user by username from database")
     }
     
     // Set nullable fields
@@ -245,7 +245,7 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*m
     // Deserialize preferences
     if len(preferencesJSON) > 0 {
         if err := json.Unmarshal(preferencesJSON, &user.Preferences); err != nil {
-            return nil, errors.NewInternalError("failed to unmarshal preferences", err)
+            return nil, domain.NewInvalidUserInputError("Failed to process user preferences", err)
         }
     }
     

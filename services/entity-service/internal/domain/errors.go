@@ -2,8 +2,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/0xsj/fn-go/pkg/common/errors"
 )
 
@@ -84,78 +82,90 @@ func init() {
 // NewEntityNotFoundError creates a new entity not found error
 func NewEntityNotFoundError(entityID string) error {
 	return errors.ErrorFromCode(ErrCodeEntityNotFound,
-		fmt.Sprintf("Entity with ID %s not found", entityID),
-		errors.ErrNotFound)
+		"Entity not found",
+		errors.ErrNotFound).WithField("entityID", entityID)
 }
 
 // NewEntityAlreadyExistsError creates a new entity already exists error
 func NewEntityAlreadyExistsError(identifier string) error {
 	return errors.ErrorFromCode(ErrCodeEntityAlreadyExists,
-		fmt.Sprintf("Entity with identifier %s already exists", identifier),
-		errors.ErrDuplicateEntry)
+		"Entity already exists",
+		errors.ErrDuplicateEntry).WithField("identifier", identifier)
 }
 
 // NewInvalidEntityInputError creates a new invalid entity input error
 func NewInvalidEntityInputError(message string, err error) error {
-	return errors.ErrorFromCode(ErrCodeInvalidEntityInput,
-		message,
-		errors.ErrValidationFailed).WithField("error_details", err)
+	return errors.ErrorFromCode(ErrCodeInvalidEntityInput, message, err)
+}
+
+// NewInvalidEntityInputWithValidation creates a new invalid entity input error with validation details
+func NewInvalidEntityInputWithValidation(message string, validationErrors map[string]string) error {
+	return errors.ErrorFromCode(ErrCodeInvalidEntityInput, message, errors.ErrValidationFailed).
+		WithField("validation_errors", validationErrors)
 }
 
 // NewEntityTypeInvalidError creates a new entity type invalid error
 func NewEntityTypeInvalidError(entityType string) error {
 	return errors.ErrorFromCode(ErrCodeEntityTypeInvalid,
-		fmt.Sprintf("Entity type %s is not valid", entityType),
-		errors.ErrInvalidInput)
+		"Invalid entity type",
+		errors.ErrInvalidInput).WithField("entityType", entityType)
 }
 
 // NewMaxNestedLevelReachedError creates a new max nested level reached error
 func NewMaxNestedLevelReachedError(maxLevel int) error {
 	return errors.ErrorFromCode(ErrCodeMaxNestedLevelReached,
-		fmt.Sprintf("Maximum nesting level of %d has been reached", maxLevel),
-		errors.ErrInvalidInput)
+		"Maximum nesting level reached",
+		errors.ErrInvalidInput).WithField("maxLevel", maxLevel)
 }
 
 // NewParentEntityNotFoundError creates a new parent entity not found error
 func NewParentEntityNotFoundError(parentID string) error {
 	return errors.ErrorFromCode(ErrCodeParentEntityNotFound,
-		fmt.Sprintf("Parent entity with ID %s not found", parentID),
-		errors.ErrNotFound)
+		"Parent entity not found",
+		errors.ErrNotFound).WithField("parentID", parentID)
 }
 
 // NewCircularReferenceError creates a new circular reference error
 func NewCircularReferenceError(entityID string, parentID string) error {
 	return errors.ErrorFromCode(ErrCodeCircularReference,
-		fmt.Sprintf("Circular reference detected: entity %s cannot be a parent of itself or its ancestors", entityID),
-		errors.ErrInvalidInput).WithField("parent_id", parentID)
+		"Circular reference detected",
+		errors.ErrInvalidInput).
+		WithField("entityID", entityID).
+		WithField("parentID", parentID)
 }
 
 // NewAddressNotFoundError creates a new address not found error
 func NewAddressNotFoundError(addressID string, entityID string) error {
 	return errors.ErrorFromCode(ErrCodeAddressNotFound,
-		fmt.Sprintf("Address with ID %s not found for entity %s", addressID, entityID),
-		errors.ErrNotFound)
+		"Address not found",
+		errors.ErrNotFound).
+		WithField("addressID", addressID).
+		WithField("entityID", entityID)
 }
 
 // NewContactNotFoundError creates a new contact not found error
 func NewContactNotFoundError(contactID string, entityID string) error {
 	return errors.ErrorFromCode(ErrCodeContactNotFound,
-		fmt.Sprintf("Contact with ID %s not found for entity %s", contactID, entityID),
-		errors.ErrNotFound)
+		"Contact not found",
+		errors.ErrNotFound).
+		WithField("contactID", contactID).
+		WithField("entityID", entityID)
 }
 
 // NewEntityHasChildrenError creates a new entity has children error
 func NewEntityHasChildrenError(entityID string, childCount int) error {
 	return errors.ErrorFromCode(ErrCodeEntityHasChildren,
-		fmt.Sprintf("Entity with ID %s has %d children and cannot be deleted", entityID, childCount),
-		errors.ErrDuplicateEntry).WithField("child_count", childCount)
+		"Entity has children and cannot be deleted",
+		errors.ErrDuplicateEntry).
+		WithField("entityID", entityID).
+		WithField("childCount", childCount)
 }
 
 // NewInvalidMetadataError creates a new invalid metadata error
 func NewInvalidMetadataError(details string) error {
 	return errors.ErrorFromCode(ErrCodeInvalidMetadata,
-		fmt.Sprintf("Invalid metadata format: %s", details),
-		errors.ErrInvalidInput)
+		"Invalid metadata format",
+		errors.ErrInvalidInput).WithField("details", details)
 }
 
 // Expose error checking functions
@@ -217,8 +227,17 @@ func Wrap(err error, message string) error {
 	return errors.Wrap(err, message)
 }
 
-// GetAppError from error interface if it is one
-func GetAppError(err error) (*errors.AppError, bool) {
-	appErr, ok := err.(*errors.AppError)
-	return appErr, ok
+// WithOperation adds operation context to an error if it's an AppError
+func WithOperation(err error, operation string) error {
+	return errors.WithOperation(err, operation)
+}
+
+// WithField adds a field to an error if it's an AppError
+func WithField(err error, key string, value any) error {
+	return errors.WithField(err, key, value)
+}
+
+// WithFields adds multiple fields to an error if it's an AppError
+func WithFields(err error, fields map[string]any) error {
+	return errors.WithFields(err, fields)
 }

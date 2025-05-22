@@ -32,6 +32,6 @@ type UserService interface {
 
 // HealthService defines health check operations
 type HealthService interface {
-	Check(ctx context.Context) (map[string]interface{}, error)
-	DeepCheck(ctx context.Context) (map[string]interface{}, error)
+	Check(ctx context.Context) (map[string]any, error)
+	DeepCheck(ctx context.Context) (map[string]any, error)
 }

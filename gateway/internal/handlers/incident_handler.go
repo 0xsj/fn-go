@@ -120,7 +120,7 @@ func (h *IncidentHandler) handleCreateIncident(w http.ResponseWriter, r *http.Re
 	}
 	
 	// Parse the request body
-	var incidentData map[string]interface{}
+	var incidentData map[string]any
 	if err := json.Unmarshal(body, &incidentData); err != nil {
 		h.RespondWithError(w, "BAD_REQUEST", "Invalid request data", http.StatusBadRequest)
 		return
@@ -135,7 +135,7 @@ func (h *IncidentHandler) handleCreateIncident(w http.ResponseWriter, r *http.Re
 	incidentData["gateway_timestamp"] = time.Now().Format(time.RFC3339)
 	
 	// Proxy the enhanced request
-	h.proxy.ProxyRequest(w, r, "incident.create", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "incident.create", func(r *http.Request) (any, error) {
 		return incidentData, nil
 	})
 }
@@ -144,7 +144,7 @@ func (h *IncidentHandler) handleCreateIncident(w http.ResponseWriter, r *http.Re
 func (h *IncidentHandler) handleGetIncident(w http.ResponseWriter, r *http.Request, id string) {
 	h.logger.With("incident_id", id).Info("Handling get incident request")
 	
-	h.proxy.ProxyRequest(w, r, "incident.get", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "incident.get", func(r *http.Request) (any, error) {
 		return map[string]string{"id": id}, nil
 	})
 }
@@ -161,7 +161,7 @@ func (h *IncidentHandler) handleUpdateIncident(w http.ResponseWriter, r *http.Re
 	}
 	
 	// Parse the request body
-	var updateData map[string]interface{}
+	var updateData map[string]any
 	if err := json.Unmarshal(body, &updateData); err != nil {
 		h.RespondWithError(w, "BAD_REQUEST", "Invalid request data", http.StatusBadRequest)
 		return
@@ -171,7 +171,7 @@ func (h *IncidentHandler) handleUpdateIncident(w http.ResponseWriter, r *http.Re
 	updateData["id"] = id
 	
 	// Proxy the request
-	h.proxy.ProxyRequest(w, r, "incident.update", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "incident.update", func(r *http.Request) (any, error) {
 		return updateData, nil
 	})
 }
@@ -180,7 +180,7 @@ func (h *IncidentHandler) handleUpdateIncident(w http.ResponseWriter, r *http.Re
 func (h *IncidentHandler) handleDeleteIncident(w http.ResponseWriter, r *http.Request, id string) {
 	h.logger.With("incident_id", id).Info("Handling delete incident request")
 	
-	h.proxy.ProxyRequest(w, r, "incident.delete", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "incident.delete", func(r *http.Request) (any, error) {
 		return map[string]string{"id": id}, nil
 	})
 }
@@ -190,7 +190,7 @@ func (h *IncidentHandler) handleIncidentComments(w http.ResponseWriter, r *http.
 	switch r.Method {
 	case http.MethodGet:
 		// List comments
-		h.proxy.ProxyRequest(w, r, "incident.comments.list", func(r *http.Request) (interface{}, error) {
+		h.proxy.ProxyRequest(w, r, "incident.comments.list", func(r *http.Request) (any, error) {
 			return map[string]string{"incident_id": id}, nil
 		})
 	case http.MethodPost:
@@ -201,7 +201,7 @@ func (h *IncidentHandler) handleIncidentComments(w http.ResponseWriter, r *http.
 			return
 		}
 		
-		var commentData map[string]interface{}
+		var commentData map[string]any
 		if err := json.Unmarshal(body, &commentData); err != nil {
 			h.RespondWithError(w, "BAD_REQUEST", "Invalid request data", http.StatusBadRequest)
 			return
@@ -210,7 +210,7 @@ func (h *IncidentHandler) handleIncidentComments(w http.ResponseWriter, r *http.
 		// Add the incident ID to the request data
 		commentData["incident_id"] = id
 		
-		h.proxy.ProxyRequest(w, r, "incident.comments.add", func(r *http.Request) (interface{}, error) {
+		h.proxy.ProxyRequest(w, r, "incident.comments.add", func(r *http.Request) (any, error) {
 			return commentData, nil
 		})
 	default:
@@ -232,7 +232,7 @@ func (h *IncidentHandler) handleIncidentStatus(w http.ResponseWriter, r *http.Re
 		return
 	}
 	
-	var statusData map[string]interface{}
+	var statusData map[string]any
 	if err := json.Unmarshal(body, &statusData); err != nil {
 		h.RespondWithError(w, "BAD_REQUEST", "Invalid request data", http.StatusBadRequest)
 		return
@@ -241,7 +241,7 @@ func (h *IncidentHandler) handleIncidentStatus(w http.ResponseWriter, r *http.Re
 	// Add the incident ID to the request data
 	statusData["id"] = id
 	
-	h.proxy.ProxyRequest(w, r, "incident.status.update", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "incident.status.update", func(r *http.Request) (any, error) {
 		return statusData, nil
 	})
 }
@@ -260,7 +260,7 @@ func (h *IncidentHandler) handleIncidentAssign(w http.ResponseWriter, r *http.Re
 		return
 	}
 	
-	var assignData map[string]interface{}
+	var assignData map[string]any
 	if err := json.Unmarshal(body, &assignData); err != nil {
 		h.RespondWithError(w, "BAD_REQUEST", "Invalid request data", http.StatusBadRequest)
 		return
@@ -269,7 +269,7 @@ func (h *IncidentHandler) handleIncidentAssign(w http.ResponseWriter, r *http.Re
 	// Add the incident ID to the request data
 	assignData["id"] = id
 	
-	h.proxy.ProxyRequest(w, r, "incident.assign", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "incident.assign", func(r *http.Request) (any, error) {
 		return assignData, nil
 	})
 }
@@ -282,7 +282,7 @@ func (h *IncidentHandler) handleIncidentHistory(w http.ResponseWriter, r *http.R
 	}
 	
 	// Get incident history
-	h.proxy.ProxyRequest(w, r, "incident.history", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "incident.history", func(r *http.Request) (any, error) {
 		return map[string]string{"id": id}, nil
 	})
 }
@@ -292,7 +292,7 @@ func (h *IncidentHandler) handleIncidentFiles(w http.ResponseWriter, r *http.Req
 	switch r.Method {
 	case http.MethodGet:
 		// List files
-		h.proxy.ProxyRequest(w, r, "incident.files.list", func(r *http.Request) (interface{}, error) {
+		h.proxy.ProxyRequest(w, r, "incident.files.list", func(r *http.Request) (any, error) {
 			return map[string]string{"incident_id": id}, nil
 		})
 	case http.MethodPost:
@@ -325,8 +325,8 @@ func (h *IncidentHandler) handleRelatedIncidents(w http.ResponseWriter, r *http.
 	// Step 1: Get incident details to get the location
 	var incidentResult struct {
 		Success bool                   `json:"success"`
-		Data    map[string]interface{} `json:"data,omitempty"`
-		Error   interface{}            `json:"error,omitempty"`
+		Data    map[string]any `json:"data,omitempty"`
+		Error   any            `json:"error,omitempty"`
 	}
 	
 	h.logger.Debug("Step 1: Getting incident details")
@@ -349,8 +349,8 @@ func (h *IncidentHandler) handleRelatedIncidents(w http.ResponseWriter, r *http.
 	// Step 2: Get location history
 	var locationResult struct {
 		Success bool                   `json:"success"`
-		Data    map[string]interface{} `json:"data,omitempty"`
-		Error   interface{}            `json:"error,omitempty"`
+		Data    map[string]any `json:"data,omitempty"`
+		Error   any            `json:"error,omitempty"`
 	}
 	
 	h.logger.With("location_id", locationID).Debug("Step 2: Getting location incident history")
@@ -363,7 +363,7 @@ func (h *IncidentHandler) handleRelatedIncidents(w http.ResponseWriter, r *http.
 	}
 	
 	// Step 3: Get details of related incidents
-	incidents, ok := locationResult.Data["incidents"].([]interface{})
+	incidents, ok := locationResult.Data["incidents"].([]any)
 	if !ok {
 		h.logger.Error("Failed to extract incidents from location history")
 		h.RespondWithError(w, "INTERNAL_SERVER_ERROR", "Failed to extract incidents from location history", http.StatusInternalServerError)
@@ -373,7 +373,7 @@ func (h *IncidentHandler) handleRelatedIncidents(w http.ResponseWriter, r *http.
 	// Filter out the current incident
 	var relatedIncidentIDs []string
 	for _, inc := range incidents {
-		incMap, ok := inc.(map[string]interface{})
+		incMap, ok := inc.(map[string]any)
 		if !ok {
 			continue
 		}
@@ -391,20 +391,20 @@ func (h *IncidentHandler) handleRelatedIncidents(w http.ResponseWriter, r *http.
 	// Step 4: If there are related incidents, get their details
 	if len(relatedIncidentIDs) == 0 {
 		// No related incidents
-		h.resp.Success(w, []interface{}{}, "No related incidents found")
+		h.resp.Success(w, []any{}, "No related incidents found")
 		return
 	}
 	
 	// For each related incident, get its details
-	relatedIncidents := make([]interface{}, 0, len(relatedIncidentIDs))
+	relatedIncidents := make([]any, 0, len(relatedIncidentIDs))
 	
 	h.logger.With("related_count", len(relatedIncidentIDs)).Debug("Step 3: Getting details of related incidents")
 	
 	for _, relatedID := range relatedIncidentIDs {
 		var relatedResult struct {
 			Success bool                   `json:"success"`
-			Data    map[string]interface{} `json:"data,omitempty"`
-			Error   interface{}            `json:"error,omitempty"`
+			Data    map[string]any `json:"data,omitempty"`
+			Error   any            `json:"error,omitempty"`
 		}
 		
 		err = patterns.Request(h.conn, "incident.get", map[string]string{"id": relatedID}, &relatedResult, 5*time.Second, h.logger)
