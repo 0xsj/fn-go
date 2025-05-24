@@ -196,7 +196,7 @@ func (s *UserServiceImpl) UpdateUser(ctx context.Context, id string, req dto.Upd
 		user.Phone = *req.PhoneNumber
 	}
 	if req.Role != nil {
-		user.Role = *req.Role
+		user.Role = models.Role(*req.Role)
 	}
 	if req.IsActive != nil {
 		if *req.IsActive {
@@ -248,5 +248,102 @@ func (s *UserServiceImpl) DeleteUser(ctx context.Context, id string) error {
 	}
 
 	s.logger.With("user_id", id).Info("User deleted successfully")
+	return nil
+}
+
+
+func (s *UserServiceImpl) ListUsers(ctx context.Context, req dto.ListUsersRequest) ([]*models.User, int, error) {
+	metrics.UserFetchCounter.Inc()
+	s.logger.With("search", req.Search).
+		With("page", req.Page).
+		With("page_size", req.PageSize).
+		Info("Listing users")
+
+	users, totalCount, err := s.repo.List(ctx, req)
+	if err != nil {
+		metrics.UserFetchErrorCounter.Inc()
+		return nil, 0, err
+	}
+
+	s.logger.With("count", len(users)).
+		With("total", totalCount).
+		Info("Users listed successfully")
+
+	return users, totalCount, nil
+}
+
+
+func (s *UserServiceImpl) UpdateUserProfile(ctx context.Context, id string, req dto.UpdateProfileRequest) (*models.User, error) {
+	metrics.UserUpdateCounter.Inc()
+	s.logger.With("user_id", id).Info("Updating user profile")
+
+	// Get existing user
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		metrics.UserUpdateErrorCounter.Inc()
+		return nil, err
+	}
+
+	// Update profile fields if provided
+	if req.FirstName != nil {
+		user.FirstName = *req.FirstName
+	}
+	if req.LastName != nil {
+		user.LastName = *req.LastName
+	}
+	if req.PhoneNumber != nil {
+		user.Phone = *req.PhoneNumber
+	}
+	if req.ProfileImageURL != nil {
+		// In a real system, you might store this in user preferences or a separate field
+		// For now, we'll skip this as it's not in the user model
+	}
+
+	user.UpdatedAt = time.Now()
+
+	// Save updated user
+	if err := s.repo.Update(ctx, user); err != nil {
+		metrics.UserUpdateErrorCounter.Inc()
+		return nil, err
+	}
+
+	s.logger.With("user_id", user.ID).Info("User profile updated successfully")
+
+	// Remove password before returning
+	user.Password = ""
+	return user, nil
+}
+
+func (s *UserServiceImpl) UpdateUserPassword(ctx context.Context, id string, req dto.UpdatePasswordRequest) error {
+	metrics.UserUpdateCounter.Inc()
+	s.logger.With("user_id", id).Info("Updating user password")
+
+	// Get existing user (with password for verification)
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		metrics.UserUpdateErrorCounter.Inc()
+		return err
+	}
+
+	// Verify current password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.CurrentPassword)); err != nil {
+		metrics.UserUpdateErrorCounter.Inc()
+		return domain.NewPasswordMismatchError()
+	}
+
+	// Hash new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		metrics.UserUpdateErrorCounter.Inc()
+		return domain.NewInvalidUserInputError("Failed to hash new password", err)
+	}
+
+	// Update password
+	if err := s.repo.UpdatePassword(ctx, id, string(hashedPassword)); err != nil {
+		metrics.UserUpdateErrorCounter.Inc()
+		return err
+	}
+
+	s.logger.With("user_id", id).Info("User password updated successfully")
 	return nil
 }
