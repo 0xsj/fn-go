@@ -251,3 +251,51 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*m
     
     return user, nil
 }
+
+func (r * UserRepository) Update(ctx context.Context, user *models.User) error {
+	query := `
+		UPDATE users 
+		SET username = ?, email = ?, first_name = ?, last_name = ?, phone = ?, 
+		    role = ?, status = ?, email_verified = ?, preferences = ?, updated_at = ?
+		WHERE id = ? AND deleted_at IS NULL
+	`
+
+	preferencesJSON, err := json.Marshal(user.Preferences)
+	if err != nil {
+		return domain.NewInvalidUserInputError("Failed to process user preferences", err)
+	}
+
+	result, err := r.db.Execute(
+		ctx,
+		query,
+		user.Username,
+		user.Email,
+		user.FirstName,
+		user.LastName,
+		user.Phone,
+		string(user.Role),
+		string(user.Status),
+		user.EmailVerified,
+		preferencesJSON,
+		user.UpdatedAt,
+		user.ID,
+	)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			if strings.Contains(err.Error(), "users.username") {
+				return domain.NewUserAlreadyExistsError(user.Username)
+			}
+			if strings.Contains(err.Error(), "users.email") {
+				return domain.NewUserAlreadyExistsError(user.Email)
+			}
+		}
+		return domain.Wrap(err, "Failed to update user in database")
+	}
+
+	if result == 0 {
+		return domain.NewUserNotFoundError(user.ID)
+	}
+
+	return nil
+}
