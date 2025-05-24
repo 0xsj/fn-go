@@ -143,3 +143,110 @@ func (s *UserServiceImpl) GetUserByUsername(ctx context.Context, username string
 	user.Password = ""
 	return user, nil
 }
+
+func (s *UserServiceImpl) UpdateUser(ctx context.Context, id string, req dto.UpdateUserRequest) (*models.User, error) {
+	metrics.UserUpdateCounter.Inc()
+	s.logger.With("user_id", id).Info("Updating user")
+
+	// Get existing user
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		metrics.UserUpdateErrorCounter.Inc()
+		return nil, err
+	}
+
+	// Check for duplicate username if updating
+	if req.Username != nil && *req.Username != user.Username {
+		existing, err := s.repo.GetByUsername(ctx, *req.Username)
+		if err == nil && existing.ID != id {
+			metrics.UserUpdateErrorCounter.Inc()
+			return nil, domain.NewUserAlreadyExistsError(*req.Username)
+		} else if !domain.IsUserNotFound(err) {
+			metrics.UserUpdateErrorCounter.Inc()
+			return nil, err
+		}
+	}
+
+	// Check for duplicate email if updating
+	if req.Email != nil && *req.Email != user.Email {
+		existing, err := s.repo.GetByEmail(ctx, *req.Email)
+		if err == nil && existing.ID != id {
+			metrics.UserUpdateErrorCounter.Inc()
+			return nil, domain.NewUserAlreadyExistsError(*req.Email)
+		} else if !domain.IsUserNotFound(err) {
+			metrics.UserUpdateErrorCounter.Inc()
+			return nil, err
+		}
+	}
+
+	// Update fields if provided
+	if req.Username != nil {
+		user.Username = *req.Username
+	}
+	if req.Email != nil {
+		user.Email = *req.Email
+	}
+	if req.FirstName != nil {
+		user.FirstName = *req.FirstName
+	}
+	if req.LastName != nil {
+		user.LastName = *req.LastName
+	}
+	if req.PhoneNumber != nil {
+		user.Phone = *req.PhoneNumber
+	}
+	if req.Role != nil {
+		user.Role = *req.Role
+	}
+	if req.IsActive != nil {
+		if *req.IsActive {
+			user.Status = models.UserStatusActive
+		} else {
+			user.Status = models.UserStatusInactive
+		}
+	}
+
+	// Update metadata if provided
+	if req.Metadata != nil {
+		// Merge metadata (in a real system, you might want more sophisticated merging)
+		if user.Preferences.Theme == "" {
+			user.Preferences.Theme = "default"
+		}
+		// Add custom metadata handling here if needed
+	}
+
+	user.UpdatedAt = time.Now()
+
+	// Save updated user
+	if err := s.repo.Update(ctx, user); err != nil {
+		metrics.UserUpdateErrorCounter.Inc()
+		return nil, err
+	}
+
+	s.logger.With("user_id", user.ID).Info("User updated successfully")
+
+	// Remove password before returning
+	user.Password = ""
+	return user, nil
+}
+
+func (s *UserServiceImpl) DeleteUser(ctx context.Context, id string) error {
+	metrics.UserDeleteCounter.Inc()
+	s.logger.With("user_id", id).Info("Deleting user")
+
+	// Check if user exists
+	_, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		metrics.UserDeleteErrorCounter.Inc()
+		return err
+	}
+
+	// Delete user
+	if err := s.repo.Delete(ctx, id); err != nil {
+		metrics.UserDeleteErrorCounter.Inc()
+		return err
+	}
+
+	s.logger.With("user_id", id).Info("User deleted successfully")
+	return nil
+}
