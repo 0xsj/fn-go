@@ -2,8 +2,9 @@
 package validation
 
 import (
+	"strings"
+
 	"github.com/0xsj/fn-go/pkg/common/log"
-	"github.com/0xsj/fn-go/pkg/models"
 	"github.com/0xsj/fn-go/services/user-service/internal/domain"
 	"github.com/0xsj/fn-go/services/user-service/internal/dto"
 )
@@ -26,9 +27,9 @@ func NewUserValidator(logger log.Logger) *UserValidator {
 func (v *UserValidator) Validate(data any) error {
 	// Apply specific validation logic based on the data type
 	switch typedData := data.(type) {
-	case models.UserCreateRequest:
+	case dto.CreateUserRequest:
 		return v.validateCreateUser(typedData)
-	case models.UserUpdateRequest:
+	case dto.UpdateUserRequest:
 		return v.validateUpdateUser(typedData)
 	case dto.UpdatePasswordRequest:
 		return v.validateUpdatePassword(typedData)
@@ -41,7 +42,7 @@ func (v *UserValidator) Validate(data any) error {
 }
 
 // validateCreateUser validates user creation requests
-func (v *UserValidator) validateCreateUser(req models.UserCreateRequest) error {
+func (v *UserValidator) validateCreateUser(req dto.CreateUserRequest) error {
 	var ve ValidationErrors
 
 	// Username validation
@@ -83,17 +84,12 @@ func (v *UserValidator) validateCreateUser(req models.UserCreateRequest) error {
 		}
 	}
 
-	// Role validation
-	if err, ok := Required(string(req.Role), "Role"); !ok {
-		ve.Add(err.Field, err.Message)
-	} else {
-		// Validate against allowed roles
-		if err, ok := OneOf(string(req.Role), []string{
-			string(models.RoleAdmin),
-			string(models.RoleCustomer),
-			string(models.RoleDispatcher),
-		}, "Role"); !ok {
-			ve.Add(err.Field, err.Message)
+	// Role validation (if provided)
+	if len(req.Roles) > 0 {
+		for i, role := range req.Roles {
+			if !IsValidRole(role) {
+				ve.Add("Roles["+string(rune(i))+"]", "Must be one of: "+strings.Join(GetValidRoles(), ", "))
+			}
 		}
 	}
 
@@ -106,7 +102,7 @@ func (v *UserValidator) validateCreateUser(req models.UserCreateRequest) error {
 }
 
 // validateUpdateUser validates user update requests
-func (v *UserValidator) validateUpdateUser(req models.UserUpdateRequest) error {
+func (v *UserValidator) validateUpdateUser(req dto.UpdateUserRequest) error {
 	var ve ValidationErrors
 
 	// Username validation (if provided)
@@ -131,12 +127,8 @@ func (v *UserValidator) validateUpdateUser(req models.UserUpdateRequest) error {
 
 	// Role validation (if provided)
 	if req.Role != nil {
-		if err, ok := OneOf(string(*req.Role), []string{
-			string(models.RoleAdmin),
-			string(models.RoleCustomer),
-			string(models.RoleDispatcher),
-		}, "Role"); !ok {
-			ve.Add(err.Field, err.Message)
+		if !IsValidRole(*req.Role) {
+			ve.Add("Role", "Must be one of: "+strings.Join(GetValidRoles(), ", "))
 		}
 	}
 
@@ -202,6 +194,15 @@ func (v *UserValidator) validateListUsers(req dto.ListUsersRequest) error {
 	if req.SortOrder != "" {
 		if err, ok := OneOf(req.SortOrder, []string{"asc", "desc"}, "SortOrder"); !ok {
 			ve.Add(err.Field, err.Message)
+		}
+	}
+
+	// Validate roles if provided
+	if len(req.Roles) > 0 {
+		for i, role := range req.Roles {
+			if !IsValidRole(role) {
+				ve.Add("Roles["+string(rune(i))+"]", "Must be one of: "+strings.Join(GetValidRoles(), ", "))
+			}
 		}
 	}
 
