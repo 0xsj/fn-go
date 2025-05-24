@@ -43,7 +43,6 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 		return domain.NewInvalidUserInputError("Failed to process user preferences", err)
 	}
 
-	// Use Execute instead of ExecContext
 	_, err = r.db.Execute(
 		ctx,
 		query,
@@ -91,7 +90,6 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
 	var lastLoginAt sql.NullTime
 	var deletedAt sql.NullTime
 
-	// Use QueryRow instead of QueryRowContext
 	row := r.db.QueryRow(ctx, query, id)
 	err := row.Scan(
 		&user.ID,
@@ -135,127 +133,120 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
 }
 
 func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
-    query := `
-        SELECT id, username, email, password, first_name, last_name, phone, 
-               role, status, last_login_at, failed_logins, email_verified, 
-               preferences, created_at, updated_at, deleted_at
-        FROM users
-        WHERE email = ? AND deleted_at IS NULL
-    `
-    
-    user := &models.User{}
-    var preferencesJSON []byte
-    var lastLoginAt sql.NullTime
-    var deletedAt sql.NullTime
-    
-    // Use QueryRow instead of QueryRowContext
-    row := r.db.QueryRow(ctx, query, email)
-    err := row.Scan(
-        &user.ID,
-        &user.Username,
-        &user.Email,
-        &user.Password,
-        &user.FirstName,
-        &user.LastName,
-        &user.Phone,
-        &user.Role,
-        &user.Status,
-        &lastLoginAt,
-        &user.FailedLogins,
-        &user.EmailVerified,
-        &preferencesJSON,
-        &user.CreatedAt,
-        &user.UpdatedAt,
-        &deletedAt,
-    )
-    
-    if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, domain.NewUserNotFoundError(email)
-        }
-        return nil, domain.Wrap(err, "Failed to get user by email from database")
-    }
-    
-    // Set nullable fields
-    if lastLoginAt.Valid {
-        user.LastLoginAt = &lastLoginAt.Time
-    }
-    if deletedAt.Valid {
-        user.DeletedAt = &deletedAt.Time
-    }
-    
-    // Deserialize preferences
-    if len(preferencesJSON) > 0 {
-        if err := json.Unmarshal(preferencesJSON, &user.Preferences); err != nil {
-            return nil, domain.NewInvalidUserInputError("Failed to process user preferences", err)
-        }
-    }
-    
-    return user, nil
+	query := `
+		SELECT id, username, email, password, first_name, last_name, phone, 
+		       role, status, last_login_at, failed_logins, email_verified, 
+		       preferences, created_at, updated_at, deleted_at
+		FROM users
+		WHERE email = ? AND deleted_at IS NULL
+	`
+
+	user := &models.User{}
+	var preferencesJSON []byte
+	var lastLoginAt sql.NullTime
+	var deletedAt sql.NullTime
+
+	row := r.db.QueryRow(ctx, query, email)
+	err := row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.FirstName,
+		&user.LastName,
+		&user.Phone,
+		&user.Role,
+		&user.Status,
+		&lastLoginAt,
+		&user.FailedLogins,
+		&user.EmailVerified,
+		&preferencesJSON,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&deletedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, domain.NewUserNotFoundError(email)
+		}
+		return nil, domain.Wrap(err, "Failed to get user by email from database")
+	}
+
+	if lastLoginAt.Valid {
+		user.LastLoginAt = &lastLoginAt.Time
+	}
+	if deletedAt.Valid {
+		user.DeletedAt = &deletedAt.Time
+	}
+
+	if len(preferencesJSON) > 0 {
+		if err := json.Unmarshal(preferencesJSON, &user.Preferences); err != nil {
+			return nil, domain.NewInvalidUserInputError("Failed to process user preferences", err)
+		}
+	}
+
+	return user, nil
 }
 
-// GetByUsername retrieves a user by username
 func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*models.User, error) {
-    query := `
-        SELECT id, username, email, password, first_name, last_name, phone, 
-               role, status, last_login_at, failed_logins, email_verified, 
-               preferences, created_at, updated_at, deleted_at
-        FROM users
-        WHERE username = ? AND deleted_at IS NULL
-    `
-    
-    user := &models.User{}
-    var preferencesJSON []byte
-    var lastLoginAt sql.NullTime
-    var deletedAt sql.NullTime
-    
-    // Use QueryRow instead of QueryRowContext
-    row := r.db.QueryRow(ctx, query, username)
-    err := row.Scan(
-        &user.ID,
-        &user.Username,
-        &user.Email,
-        &user.Password,
-        &user.FirstName,
-        &user.LastName,
-        &user.Phone,
-        &user.Role,
-        &user.Status,
-        &lastLoginAt,
-        &user.FailedLogins,
-        &user.EmailVerified,
-        &preferencesJSON,
-        &user.CreatedAt,
-        &user.UpdatedAt,
-        &deletedAt,
-    )
-    
-    if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, domain.NewUserNotFoundError(username)
-        }
-        return nil, domain.Wrap(err, "Failed to get user by username from database")
-    }
-    
-    // Set nullable fields
-    if lastLoginAt.Valid {
-        user.LastLoginAt = &lastLoginAt.Time
-    }
-    if deletedAt.Valid {
-        user.DeletedAt = &deletedAt.Time
-    }
-    
-    // Deserialize preferences
-    if len(preferencesJSON) > 0 {
-        if err := json.Unmarshal(preferencesJSON, &user.Preferences); err != nil {
-            return nil, domain.NewInvalidUserInputError("Failed to process user preferences", err)
-        }
-    }
-    
-    return user, nil
+	query := `
+		SELECT id, username, email, password, first_name, last_name, phone, 
+		       role, status, last_login_at, failed_logins, email_verified, 
+		       preferences, created_at, updated_at, deleted_at
+		FROM users
+		WHERE username = ? AND deleted_at IS NULL
+	`
+
+	user := &models.User{}
+	var preferencesJSON []byte
+	var lastLoginAt sql.NullTime
+	var deletedAt sql.NullTime
+
+	row := r.db.QueryRow(ctx, query, username)
+	err := row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.FirstName,
+		&user.LastName,
+		&user.Phone,
+		&user.Role,
+		&user.Status,
+		&lastLoginAt,
+		&user.FailedLogins,
+		&user.EmailVerified,
+		&preferencesJSON,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&deletedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, domain.NewUserNotFoundError(username)
+		}
+		return nil, domain.Wrap(err, "Failed to get user by username from database")
+	}
+
+	if lastLoginAt.Valid {
+		user.LastLoginAt = &lastLoginAt.Time
+	}
+	if deletedAt.Valid {
+		user.DeletedAt = &deletedAt.Time
+	}
+
+	if len(preferencesJSON) > 0 {
+		if err := json.Unmarshal(preferencesJSON, &user.Preferences); err != nil {
+			return nil, domain.NewInvalidUserInputError("Failed to process user preferences", err)
+		}
+	}
+
+	return user, nil
 }
 
-func (r * UserRepository) Update(ctx context.Context, user *models.User) error {
+func (r *UserRepository) Update(ctx context.Context, user *models.User) error {
 	query := `
 		UPDATE users 
 		SET username = ?, email = ?, first_name = ?, last_name = ?, phone = ?, 
@@ -302,7 +293,6 @@ func (r * UserRepository) Update(ctx context.Context, user *models.User) error {
 
 	return nil
 }
-
 
 func (r *UserRepository) Delete(ctx context.Context, id string) error {
 	// Soft delete by setting deleted_at timestamp
@@ -411,7 +401,6 @@ func (r *UserRepository) List(ctx context.Context, req dto.ListUsersRequest) ([]
 	return users, totalCount, nil
 }
 
-
 func (r *UserRepository) UpdatePassword(ctx context.Context, userID string, hashedPassword string) error {
 	query := `
 		UPDATE users 
@@ -430,7 +419,6 @@ func (r *UserRepository) UpdatePassword(ctx context.Context, userID string, hash
 
 	return nil
 }
-
 
 func (r *UserRepository) UpdateLastLoginAt(ctx context.Context, userID string, loginTime time.Time) error {
 	query := `
@@ -532,6 +520,7 @@ func (r *UserRepository) UpdatePreferences(ctx context.Context, userID string, p
 	return nil
 }
 
+// Helper methods for building SQL queries
 
 func (r *UserRepository) buildWhereClause(req dto.ListUsersRequest) (string, []interface{}) {
 	conditions := []string{"deleted_at IS NULL"}

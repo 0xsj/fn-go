@@ -10,6 +10,7 @@ import (
 	"github.com/0xsj/fn-go/services/user-service/internal/domain"
 	"github.com/0xsj/fn-go/services/user-service/internal/dto"
 	"github.com/0xsj/fn-go/services/user-service/internal/repository"
+	v "github.com/0xsj/fn-go/services/user-service/internal/validation"
 	"github.com/0xsj/fn-go/services/user-service/pkg/metrics"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -31,7 +32,6 @@ func NewUserService(repo repository.UserRepository, logger log.Logger) UserServi
 
 // CreateUser creates a new user
 func (s *UserServiceImpl) CreateUser(ctx context.Context, req dto.CreateUserRequest) (*models.User, error) {
-	// Increment metrics
 	metrics.UserCreationCounter.Inc()
 	s.logger.With("username", req.Username).
 		With("email", req.Email).
@@ -64,6 +64,19 @@ func (s *UserServiceImpl) CreateUser(ctx context.Context, req dto.CreateUserRequ
 		return nil, domain.NewInvalidUserInputError("Failed to hash password", err)
 	}
 
+	// Determine role - use from request or default to customer
+	role := models.RoleCustomer
+	if len(req.Roles) > 0 {
+		// For now, just take the first role. In a real system, you might handle multiple roles differently
+		validatedRole, err := v.ValidateRole(req.Roles[0])
+		if err != nil {
+			// If invalid role provided, log warning and use default
+			s.logger.With("invalid_role", req.Roles[0]).Warn("Invalid role provided, using default customer role")
+		} else {
+			role = validatedRole
+		}
+	}
+
 	// Create new user
 	now := time.Now()
 	user := &models.User{
@@ -74,7 +87,7 @@ func (s *UserServiceImpl) CreateUser(ctx context.Context, req dto.CreateUserRequ
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Phone:     req.PhoneNumber,
-		Role:      models.Role("customer"), // Default role, adjust as needed
+		Role:      role,
 		Status:    models.UserStatusActive,
 		CreatedAt: now,
 		UpdatedAt: now,
@@ -96,6 +109,7 @@ func (s *UserServiceImpl) CreateUser(ctx context.Context, req dto.CreateUserRequ
 	user.Password = ""
 	return user, nil
 }
+
 
 // GetUser gets a user by ID
 func (s *UserServiceImpl) GetUser(ctx context.Context, id string) (*models.User, error) {
