@@ -3,6 +3,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/0xsj/fn-go/pkg/models"
 )
@@ -15,7 +16,7 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*models.User, error)
 	GetByUsername(ctx context.Context, username string) (*models.User, error)
 	Update(ctx context.Context, user *models.User) error
-	// Delete(ctx context.Context, id string) error
+	Delete(ctx context.Context, id string) error
 	// List(ctx context.Context, filter dto.ListUsersRequest) ([]*models.User, int, error)
 	
 	// // Role management
@@ -24,8 +25,8 @@ type UserRepository interface {
 	// GetRoles(ctx context.Context, userID string) ([]string, error)
 	
 	// // User authentication
-	// UpdatePassword(ctx context.Context, userID string, hashedPassword string) error
-    // UpdateLastLoginAt(ctx context.Context, userID string, loginTime time.Time) error
+	UpdatePassword(ctx context.Context, userID string, hashedPassword string) error
+    UpdateLastLoginAt(ctx context.Context, userID string, loginTime time.Time) error
     // IncrementFailedLogins(ctx context.Context, userID string) error
     // ResetFailedLogins(ctx context.Context, userID string) error
 

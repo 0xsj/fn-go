@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"strings"
+	"time"
 
 	"github.com/0xsj/fn-go/pkg/common/db"
 	"github.com/0xsj/fn-go/pkg/common/log"
@@ -295,6 +296,67 @@ func (r * UserRepository) Update(ctx context.Context, user *models.User) error {
 
 	if result == 0 {
 		return domain.NewUserNotFoundError(user.ID)
+	}
+
+	return nil
+}
+
+
+func (r *UserRepository) Delete(ctx context.Context, id string) error {
+	// Soft delete by setting deleted_at timestamp
+	query := `
+		UPDATE users 
+		SET deleted_at = ?, updated_at = ?
+		WHERE id = ? AND deleted_at IS NULL
+	`
+
+	now := time.Now()
+	result, err := r.db.Execute(ctx, query, now, now, id)
+	if err != nil {
+		return domain.Wrap(err, "Failed to delete user from database")
+	}
+
+	if result == 0 {
+		return domain.NewUserNotFoundError(id)
+	}
+
+	return nil
+}
+
+func (r *UserRepository) UpdatePassword(ctx context.Context, userID string, hashedPassword string) error {
+	query := `
+		UPDATE users 
+		SET password = ?, updated_at = ?
+		WHERE id = ? AND deleted_at IS NULL
+	`
+
+	result, err := r.db.Execute(ctx, query, hashedPassword, time.Now(), userID)
+	if err != nil {
+		return domain.Wrap(err, "Failed to update user password")
+	}
+
+	if result == 0 {
+		return domain.NewUserNotFoundError(userID)
+	}
+
+	return nil
+}
+
+
+func (r *UserRepository) UpdateLastLoginAt(ctx context.Context, userID string, loginTime time.Time) error {
+	query := `
+		UPDATE users 
+		SET last_login_at = ?, updated_at = ?
+		WHERE id = ? AND deleted_at IS NULL
+	`
+
+	result, err := r.db.Execute(ctx, query, loginTime, time.Now(), userID)
+	if err != nil {
+		return domain.Wrap(err, "Failed to update user last login time")
+	}
+
+	if result == 0 {
+		return domain.NewUserNotFoundError(userID)
 	}
 
 	return nil
