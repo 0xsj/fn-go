@@ -113,3 +113,33 @@ func (s *UserServiceImpl) GetUser(ctx context.Context, id string) (*models.User,
 	user.Password = ""
 	return user, nil
 }
+
+func (s *UserServiceImpl) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	metrics.UserFetchCounter.Inc()
+	s.logger.With("email", email).Info("Getting user by email")
+
+	user, err := s.repo.GetByEmail(ctx, email)
+	if err != nil {
+		metrics.UserFetchErrorCounter.Inc()
+		return nil, err
+	}
+
+	// Remove password before returning
+	user.Password = ""
+	return user, nil
+}
+
+func (s *UserServiceImpl) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
+	metrics.UserFetchCounter.Inc()
+	s.logger.With("username", username).Info("Getting user by username")
+
+	user, err := s.repo.GetByUsername(ctx, username)
+	if err != nil {
+		metrics.UserFetchErrorCounter.Inc()
+		return nil, err
+	}
+
+	// Remove password before returning
+	user.Password = ""
+	return user, nil
+}
