@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: services/auth-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/auth-service/.env.dev
     volumes:
       - ./services/auth-service:/app/services/auth-service
       - ./pkg:/app/pkg
@@ -20,6 +23,9 @@ services:
     build:
       context: .
       dockerfile: services/user-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/user-service/.env.dev
     volumes:
       - ./services/user-service:/app/services/user-service
       - ./pkg:/app/pkg
@@ -35,6 +41,9 @@ services:
     build:
       context: .
       dockerfile: services/entity-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/entity-service/.env.dev
     volumes:
       - ./services/entity-service:/app/services/entity-service
       - ./pkg:/app/pkg
@@ -50,6 +59,9 @@ services:
     build:
       context: .
       dockerfile: services/incident-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/incident-service/.env.dev
     volumes:
       - ./services/incident-service:/app/services/incident-service
       - ./pkg:/app/pkg
@@ -65,6 +77,9 @@ services:
     build:
       context: .
       dockerfile: services/location-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/location-service/.env.dev
     volumes:
       - ./services/location-service:/app/services/location-service
       - ./pkg:/app/pkg
@@ -80,6 +95,9 @@ services:
     build:
       context: .
       dockerfile: services/monitoring-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/monitoring-service/.env.dev
     volumes:
       - ./services/monitoring-service:/app/services/monitoring-service
       - ./pkg:/app/pkg
@@ -95,6 +113,9 @@ services:
     build:
       context: .
       dockerfile: services/notification-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/notification-service/.env.dev
     volumes:
       - ./services/notification-service:/app/services/notification-service
       - ./pkg:/app/pkg
@@ -110,6 +131,9 @@ services:
     build:
       context: .
       dockerfile: services/chat-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/chat-service/.env.dev
     volumes:
       - ./services/chat-service:/app/services/chat-service
       - ./pkg:/app/pkg
@@ -126,6 +150,9 @@ services:
     build:
       context: .
       dockerfile: gateway/Dockerfile.dev
+    env_file:
+      - .env
+      - gateway/.env.dev
     volumes:
       - ./gateway:/app/gateway
       - ./pkg:/app/pkg

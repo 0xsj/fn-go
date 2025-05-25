@@ -1,6 +1,40 @@
 # Variables
 SERVICES := auth-service user-service entity-service incident-service location-service monitoring-service notification-service chat-service
 
+# Environment setup
+.PHONY: setup-env-dev
+setup-env-dev:
+	@echo "Setting up .env.dev files for all services..."
+	@chmod +x setup-env-dev.sh
+	@./setup-env-dev.sh
+
+.PHONY: check-env
+check-env:
+	@echo "Checking environment files:"
+	@echo "Root .env file:"
+	@if [ -f .env ]; then echo "  ✓ .env exists"; else echo "  ✗ .env missing (copy from .env.example)"; fi
+	@echo ""
+	@echo "Service .env.dev files:"
+	@for service in $(SERVICES); do \
+		if [ -f services/$service/.env.dev ]; then \
+			echo "  ✓ services/$service/.env.dev"; \
+		else \
+			echo "  ✗ services/$service/.env.dev missing"; \
+		fi; \
+	done
+	@if [ -f gateway/.env.dev ]; then echo "  ✓ gateway/.env.dev"; else echo "  ✗ gateway/.env.dev missing"; fi
+
+.PHONY: clean-env
+clean-env:
+	@echo "Removing all .env.dev files..."
+	@for service in $(SERVICES); do \
+		if [ -f services/$service/.env.dev ]; then \
+			rm services/$service/.env.dev; \
+			echo "  Removed services/$service/.env.dev"; \
+		fi; \
+	done
+	@if [ -f gateway/.env.dev ]; then rm gateway/.env.dev; echo "  Removed gateway/.env.dev"; fi
+
 # Infrastructure-only commands
 .PHONY: infra-up
 infra-up:
@@ -266,6 +300,11 @@ clean:
 .PHONY: help
 help:
 	@echo "Available commands:"
+	@echo ""
+	  @echo "  Environment:"
+	@echo "    setup-env-dev        - Create .env.dev files for all services"
+	@echo "    check-env            - Check status of environment files"
+	@echo "    clean-env            - Remove all .env.dev files"
 	@echo ""
 	@echo "  Infrastructure (for local development):"
 	@echo "    infra-up             - Start infrastructure services only (MySQL, NATS, etc.)"
