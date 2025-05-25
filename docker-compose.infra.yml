@@ -1,0 +1,125 @@
+services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: fn-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: app
+      MYSQL_USER: ${DB_USER:-appuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-apppassword}
+    ports:
+      - "${DB_PORT_FORWARD:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./infra/db/init:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password --init-file=/docker-entrypoint-initdb.d/init-databases.sql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p$$MYSQL_ROOT_PASSWORD",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+  # NATS Service
+  nats:
+    image: nats:2.10-alpine
+    container_name: fn-nats
+    ports:
+      - "${NATS_PORT_FORWARD:-4222}:4222"
+      - "${NATS_MONITOR_PORT_FORWARD:-8222}:8222"
+    command: ["-js", "-m", "8222"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8222/varz",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: fn-prometheus
+    volumes:
+      - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT_FORWARD:-9090}:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+    depends_on:
+      - nats
+    networks:
+      - fn-network
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: fn-grafana
+    volumes:
+      - ./infra/observability/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./infra/observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT_FORWARD:-3000}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    depends_on:
+      - prometheus
+    networks:
+      - fn-network
+
+  # Redis (optional - for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: fn-redis
+    ports:
+      - "${REDIS_PORT_FORWARD:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+volumes:
+  mysql-data:
+  prometheus-data:
+  grafana-data:
+  redis-data:
+
+networks:
+  fn-network:
+    driver: bridge

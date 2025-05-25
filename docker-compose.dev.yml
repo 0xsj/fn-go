@@ -1,9 +1,13 @@
+# docker-compose.dev.yml (updated with all services)
 services:
   # Auth Service (Dev Mode)
   auth-service:
     build:
       context: .
       dockerfile: services/auth-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/auth-service/.env.dev
     volumes:
       - ./services/auth-service:/app/services/auth-service
       - ./pkg:/app/pkg
@@ -19,6 +23,9 @@ services:
     build:
       context: .
       dockerfile: services/user-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/user-service/.env.dev
     volumes:
       - ./services/user-service:/app/services/user-service
       - ./pkg:/app/pkg
@@ -29,11 +36,123 @@ services:
       - "9001:8080" # Expose port for direct access
       - "40001:40000" # Delve debugger port
 
+  # Entity Service (Dev Mode)
+  entity-service:
+    build:
+      context: .
+      dockerfile: services/entity-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/entity-service/.env.dev
+    volumes:
+      - ./services/entity-service:/app/services/entity-service
+      - ./pkg:/app/pkg
+    environment:
+      - GO_ENV=development
+      - DEBUG=true
+    ports:
+      - "9002:8080" # Expose port for direct access
+      - "40002:40000" # Delve debugger port
+
+  # Incident Service (Dev Mode)
+  incident-service:
+    build:
+      context: .
+      dockerfile: services/incident-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/incident-service/.env.dev
+    volumes:
+      - ./services/incident-service:/app/services/incident-service
+      - ./pkg:/app/pkg
+    environment:
+      - GO_ENV=development
+      - DEBUG=true
+    ports:
+      - "9003:8080" # Expose port for direct access
+      - "40003:40000" # Delve debugger port
+
+  # Location Service (Dev Mode)
+  location-service:
+    build:
+      context: .
+      dockerfile: services/location-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/location-service/.env.dev
+    volumes:
+      - ./services/location-service:/app/services/location-service
+      - ./pkg:/app/pkg
+    environment:
+      - GO_ENV=development
+      - DEBUG=true
+    ports:
+      - "9004:8080" # Expose port for direct access
+      - "40004:40000" # Delve debugger port
+
+  # Monitoring Service (Dev Mode)
+  monitoring-service:
+    build:
+      context: .
+      dockerfile: services/monitoring-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/monitoring-service/.env.dev
+    volumes:
+      - ./services/monitoring-service:/app/services/monitoring-service
+      - ./pkg:/app/pkg
+    environment:
+      - GO_ENV=development
+      - DEBUG=true
+    ports:
+      - "9005:8080" # Expose port for direct access
+      - "40005:40000" # Delve debugger port
+
+  # Notification Service (Dev Mode)
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/notification-service/.env.dev
+    volumes:
+      - ./services/notification-service:/app/services/notification-service
+      - ./pkg:/app/pkg
+    environment:
+      - GO_ENV=development
+      - DEBUG=true
+    ports:
+      - "9006:8080" # Expose port for direct access
+      - "40006:40000" # Delve debugger port
+
+  # Chat Service (Dev Mode)
+  chat-service:
+    build:
+      context: .
+      dockerfile: services/chat-service/Dockerfile.dev
+    env_file:
+      - .env
+      - services/chat-service/.env.dev
+    volumes:
+      - ./services/chat-service:/app/services/chat-service
+      - ./pkg:/app/pkg
+    environment:
+      - GO_ENV=development
+      - DEBUG=true
+    ports:
+      - "9007:8080" # Expose port for direct access
+      - "9008:8081" # WebSocket port
+      - "40007:40000" # Delve debugger port
+
   # Gateway (Dev Mode)
   gateway:
     build:
       context: .
       dockerfile: gateway/Dockerfile.dev
+    env_file:
+      - .env
+      - gateway/.env.dev
     volumes:
       - ./gateway:/app/gateway
       - ./pkg:/app/pkg
@@ -42,4 +161,4 @@ services:
       - DEBUG=true
     ports:
       - "8080:8080"
-      - "40002:40000" # Delve debugger port
+      - "40008:40000" # Delve debugger port

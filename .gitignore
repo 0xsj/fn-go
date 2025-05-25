@@ -1,7 +1,45 @@
-# .gitignore
+# .gitignore (updated)
+
+# Environment files
 .env
 .env.*
 !.env.example
+!.env.infrastructure
+
+# Service-specific environment files
 services/**/.env
 services/**/.env.*
 !services/**/.env.example
+!services/**/.env.dev.example
+
+# Gateway environment files
+gateway/.env
+gateway/.env.*
+!gateway/.env.example
+!gateway/.env.dev.example
+
+# Build artifacts
+bin/
+tmp/
+*.log
+
+# Go specific
+*.out
+coverage.out
+*_coverage.out
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Test files
+*_test.go.bak
