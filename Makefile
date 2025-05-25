@@ -1,5 +1,5 @@
 # Variables
-SERVICES := user-service auth-service entity-service incident-service location-service notification-service monitoring-service chat-service
+SERVICES := auth-service user-service entity-service incident-service location-service monitoring-service notification-service chat-service
 
 # Infrastructure-only commands
 .PHONY: infra-up

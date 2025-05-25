@@ -1,4 +1,4 @@
-# docker-compose.yml (updated with fixes)
+# docker-compose.yml (complete with all services)
 services:
   # MySQL Database Service
   mysql:
@@ -80,6 +80,9 @@ services:
       - JWT_SECRET=${AUTH_SERVICE_JWT_SECRET:-your-secret-key}
       - ACCESS_TOKEN_EXPIRY=${AUTH_SERVICE_ACCESS_TOKEN_EXPIRY:-15m}
       - REFRESH_TOKEN_EXPIRY=${AUTH_SERVICE_REFRESH_TOKEN_EXPIRY:-7d}
+      - PASSWORD_HASH_COST=${AUTH_SERVICE_PASSWORD_HASH_COST:-10}
+      - MAX_LOGIN_ATTEMPTS=${AUTH_SERVICE_MAX_LOGIN_ATTEMPTS:-5}
+      - LOGIN_LOCKOUT_PERIOD=${AUTH_SERVICE_LOGIN_LOCKOUT_PERIOD:-15m}
     depends_on:
       mysql:
         condition: service_healthy
@@ -145,6 +148,303 @@ services:
     networks:
       - fn-network
 
+  # Entity Service
+  entity-service:
+    build:
+      context: .
+      dockerfile: services/entity-service/Dockerfile
+      args:
+        SERVICE_NAME: entity-service
+    container_name: fn-entity-service
+    environment:
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-appuser}
+      - DB_PASSWORD=${DB_PASSWORD:-apppassword}
+      - DB_NAME=${ENTITY_SERVICE_DB_NAME:-entity_service}
+      - SERVICE_PORT=${ENTITY_SERVICE_PORT:-8080}
+      - MAX_NESTED_ENTITIES=${ENTITY_SERVICE_MAX_NESTED_ENTITIES:-5}
+      - ENABLE_CACHE=${ENTITY_SERVICE_ENABLE_CACHE:-true}
+      - CACHE_TTL=${ENTITY_SERVICE_CACHE_TTL:-5m}
+      - DEFAULT_ENTITY_TYPE=${ENTITY_SERVICE_DEFAULT_ENTITY_TYPE:-customer}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+  # Incident Service
+  incident-service:
+    build:
+      context: .
+      dockerfile: services/incident-service/Dockerfile
+      args:
+        SERVICE_NAME: incident-service
+    container_name: fn-incident-service
+    environment:
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-appuser}
+      - DB_PASSWORD=${DB_PASSWORD:-apppassword}
+      - DB_NAME=${INCIDENT_SERVICE_DB_NAME:-incident_service}
+      - SERVICE_PORT=${INCIDENT_SERVICE_PORT:-8080}
+      - DEFAULT_PRIORITY=${INCIDENT_SERVICE_DEFAULT_PRIORITY:-medium}
+      - AUTO_ASSIGN=${INCIDENT_SERVICE_AUTO_ASSIGN:-false}
+      - AUTO_ASSIGN_ROUND_ROBIN=${INCIDENT_SERVICE_AUTO_ASSIGN_ROUND_ROBIN:-true}
+      - NOTIFY_ON_STATUS_CHANGE=${INCIDENT_SERVICE_NOTIFY_ON_STATUS_CHANGE:-true}
+      - REQUIRE_RESOLUTION_COMMENT=${INCIDENT_SERVICE_REQUIRE_RESOLUTION_COMMENT:-true}
+      - ATTACHMENT_STORAGE_PATH=${INCIDENT_SERVICE_ATTACHMENT_STORAGE_PATH:-/attachments}
+      - MAX_ATTACHMENT_SIZE=${INCIDENT_SERVICE_MAX_ATTACHMENT_SIZE:-10485760}
+    volumes:
+      - incident-attachments:/attachments
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      location-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+  # Location Service
+  location-service:
+    build:
+      context: .
+      dockerfile: services/location-service/Dockerfile
+      args:
+        SERVICE_NAME: location-service
+    container_name: fn-location-service
+    environment:
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-appuser}
+      - DB_PASSWORD=${DB_PASSWORD:-apppassword}
+      - DB_NAME=${LOCATION_SERVICE_DB_NAME:-location_service}
+      - SERVICE_PORT=${LOCATION_SERVICE_PORT:-8080}
+      - GEOCODE_PROVIDER=${LOCATION_SERVICE_GEOCODE_PROVIDER:-google}
+      - GEOCODE_API_KEY=${LOCATION_SERVICE_GEOCODE_API_KEY:-your-api-key}
+      - ENABLE_GEOCODING=${LOCATION_SERVICE_ENABLE_GEOCODING:-true}
+      - DEFAULT_COORDINATES=${LOCATION_SERVICE_DEFAULT_COORDINATES:-0.0,0.0}
+      - MAX_NESTING_LEVEL=${LOCATION_SERVICE_MAX_NESTING_LEVEL:-5}
+      - ENABLE_SPATIAL_SEARCH=${LOCATION_SERVICE_ENABLE_SPATIAL_SEARCH:-true}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+  # Monitoring Service
+  monitoring-service:
+    build:
+      context: .
+      dockerfile: services/monitoring-service/Dockerfile
+      args:
+        SERVICE_NAME: monitoring-service
+    container_name: fn-monitoring-service
+    environment:
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-appuser}
+      - DB_PASSWORD=${DB_PASSWORD:-apppassword}
+      - DB_NAME=${MONITORING_SERVICE_DB_NAME:-monitoring_service}
+      - SERVICE_PORT=${MONITORING_SERVICE_PORT:-8080}
+      - PROMETHEUS_ENABLED=${MONITORING_SERVICE_PROMETHEUS_ENABLED:-true}
+      - PROMETHEUS_PORT=${MONITORING_SERVICE_PROMETHEUS_PORT:-9090}
+      - COLLECTION_FREQUENCY=${MONITORING_SERVICE_COLLECTION_FREQUENCY:-15s}
+      - HEALTH_CHECK_PATH=${MONITORING_SERVICE_HEALTH_CHECK_PATH:-/health}
+      - SERVICE_TIMEOUT=${MONITORING_SERVICE_SERVICE_TIMEOUT:-5s}
+      - RETENTION_PERIOD=${MONITORING_SERVICE_RETENTION_PERIOD:-15d}
+      - ALERTING_ENABLED=${MONITORING_SERVICE_ALERTING_ENABLED:-true}
+      - ALERTING_SEND_EMAIL=${MONITORING_SERVICE_ALERTING_SEND_EMAIL:-true}
+      - ALERTING_SEND_SMS=${MONITORING_SERVICE_ALERTING_SEND_SMS:-false}
+      - ALERTING_DEFAULT_RECIPIENTS=${MONITORING_SERVICE_ALERTING_DEFAULT_RECIPIENTS:-admin@example.com,admin2@example.com}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+      args:
+        SERVICE_NAME: notification-service
+    container_name: fn-notification-service
+    environment:
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-appuser}
+      - DB_PASSWORD=${DB_PASSWORD:-apppassword}
+      - DB_NAME=${NOTIFICATION_SERVICE_DB_NAME:-notification_service}
+      - SERVICE_PORT=${NOTIFICATION_SERVICE_PORT:-8080}
+      - DEFAULT_CHANNEL=${NOTIFICATION_SERVICE_DEFAULT_CHANNEL:-email}
+      - TEMPLATES_PATH=${NOTIFICATION_SERVICE_TEMPLATES_PATH:-./templates}
+      - BATCH_SIZE=${NOTIFICATION_SERVICE_BATCH_SIZE:-50}
+      - RETRY_ATTEMPTS=${NOTIFICATION_SERVICE_RETRY_ATTEMPTS:-3}
+      - RETRY_DELAY=${NOTIFICATION_SERVICE_RETRY_DELAY:-1m}
+      - SMTP_HOST=${NOTIFICATION_SERVICE_SMTP_HOST:-smtp.example.com}
+      - SMTP_PORT=${NOTIFICATION_SERVICE_SMTP_PORT:-587}
+      - SMTP_USERNAME=${NOTIFICATION_SERVICE_SMTP_USERNAME:-notifications@example.com}
+      - SMTP_PASSWORD=${NOTIFICATION_SERVICE_SMTP_PASSWORD:-password}
+      - SMTP_FROM_NAME=${NOTIFICATION_SERVICE_SMTP_FROM_NAME:-FN-GO}
+      - SMTP_FROM_EMAIL=${NOTIFICATION_SERVICE_SMTP_FROM_EMAIL:-notifications@example.com}
+      - SMTP_USE_TLS=${NOTIFICATION_SERVICE_SMTP_USE_TLS:-true}
+      - SMS_PROVIDER=${NOTIFICATION_SERVICE_SMS_PROVIDER:-twilio}
+      - SMS_API_KEY=${NOTIFICATION_SERVICE_SMS_API_KEY:-your-api-key}
+      - SMS_FROM_NUMBER=${NOTIFICATION_SERVICE_SMS_FROM_NUMBER:-+15551234567}
+      - PUSH_ENABLED=${NOTIFICATION_SERVICE_PUSH_ENABLED:-false}
+      - PUSH_PROVIDER=${NOTIFICATION_SERVICE_PUSH_PROVIDER:-firebase}
+      - PUSH_API_KEY=${NOTIFICATION_SERVICE_PUSH_API_KEY:-your-api-key}
+    volumes:
+      - ./services/notification-service/templates:/app/templates:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - fn-network
+
+  # Chat Service
+  chat-service:
+    build:
+      context: .
+      dockerfile: services/chat-service/Dockerfile
+      args:
+        SERVICE_NAME: chat-service
+    container_name: fn-chat-service
+    environment:
+      - NATS_URL=${NATS_URL:-nats://nats:4222}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-appuser}
+      - DB_PASSWORD=${DB_PASSWORD:-apppassword}
+      - DB_NAME=${CHAT_SERVICE_DB_NAME:-chat_service}
+      - SERVICE_PORT=${CHAT_SERVICE_PORT:-8080}
+      - MAX_MESSAGE_SIZE=${CHAT_SERVICE_MAX_MESSAGE_SIZE:-4096}
+      - MAX_ROOM_MEMBERS=${CHAT_SERVICE_MAX_ROOM_MEMBERS:-100}
+      - MESSAGE_RATE_LIMIT=${CHAT_SERVICE_MESSAGE_RATE_LIMIT:-30}
+      - FILE_UPLOAD_PATH=${CHAT_SERVICE_FILE_UPLOAD_PATH:-/uploads}
+      - ENABLE_WEBSOCKET=${CHAT_SERVICE_ENABLE_WEBSOCKET:-true}
+      - WEBSOCKET_PORT=${CHAT_SERVICE_WEBSOCKET_PORT:-8081}
+    ports:
+      - "${CHAT_WEBSOCKET_PORT_FORWARD:-8081}:8081"
+    volumes:
+      - chat-uploads:/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - fn-network
+
   # API Gateway
   gateway:
     build:
@@ -165,6 +465,16 @@ services:
         condition: service_healthy
       user-service:
         condition: service_healthy
+      entity-service:
+        condition: service_healthy
+      incident-service:
+        condition: service_healthy
+      location-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      chat-service:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -178,7 +488,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 30s
     restart: unless-stopped
     networks:
       - fn-network
@@ -192,10 +502,16 @@ services:
       - prometheus-data:/prometheus
     ports:
       - "${PROMETHEUS_PORT_FORWARD:-9090}:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
     depends_on:
       - gateway
-      - user-service
-      - auth-service
+      - monitoring-service
     networks:
       - fn-network
 
@@ -219,6 +535,8 @@ volumes:
   mysql-data:
   prometheus-data:
   grafana-data:
+  incident-attachments:
+  chat-uploads:
 
 networks:
   fn-network:
