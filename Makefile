@@ -39,27 +39,43 @@ clean-env:
 .PHONY: infra-up
 infra-up:
 	@echo "Starting infrastructure services (MySQL, NATS, Prometheus, Grafana, Redis)..."
-	docker-compose -f docker-compose.infrastructure.yml up -d
+	docker-compose -f docker-compose.infra.yml up -d
 
 .PHONY: infra-down
 infra-down:
 	@echo "Stopping infrastructure services..."
-	docker-compose -f docker-compose.infrastructure.yml down
+	docker-compose -f docker-compose.infra.yml down
 
 .PHONY: infra-logs
 infra-logs:
-	docker-compose -f docker-compose.infrastructure.yml logs -f
+	docker-compose -f docker-compose.infra.yml logs -f
 
 .PHONY: infra-restart
 infra-restart:
 	@echo "Restarting infrastructure services..."
-	docker-compose -f docker-compose.infrastructure.yml restart
+	docker-compose -f docker-compose.infra.yml restart
 
 .PHONY: infra-clean
 infra-clean:
 	@echo "Cleaning infrastructure services and volumes..."
-	docker-compose -f docker-compose.infrastructure.yml down -v
+	docker-compose -f docker-compose.infra.yml down -v
 	docker system prune -f
+
+.PHONY: cleanup-ports
+cleanup-ports:
+	@echo "Cleaning up port conflicts..."
+	@echo "Stopping any existing containers..."
+	-docker compose down 2>/dev/null || true
+	-docker compose -f docker-compose.infra.yml down 2>/dev/null || true
+	@echo "Killing processes on ports 4222 and 8222..."
+	-sudo lsof -ti:4222 | xargs -r kill -9 2>/dev/null || true
+	-sudo lsof -ti:8222 | xargs -r kill -9 2>/dev/null || true
+	@echo "Checking if ports are free..."
+	@if lsof -i :4222 >/dev/null 2>&1; then echo "⚠️  Port 4222 still in use"; else echo "✅ Port 4222 is free"; fi
+	@if lsof -i :8222 >/dev/null 2>&1; then echo "⚠️  Port 8222 still in use"; else echo "✅ Port 8222 is free"; fi
+
+.PHONY: force-infra-up
+force-infra-up: cleanup-ports infra-up
 
 # Database management (works with infra-only setup)
 .PHONY: db-shell
@@ -68,23 +84,74 @@ db-shell:
 
 .PHONY: db-root-shell
 db-root-shell:
-	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword)
+	docker exec -it fn-mysql mysql -uroot -prootpassword
 
 .PHONY: db-reset
 db-reset:
 	@echo "Resetting all databases..."
-	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword) -e "DROP DATABASE IF EXISTS auth_service; DROP DATABASE IF EXISTS user_service; DROP DATABASE IF EXISTS entity_service; DROP DATABASE IF EXISTS incident_service; DROP DATABASE IF EXISTS location_service; DROP DATABASE IF EXISTS monitoring_service; DROP DATABASE IF EXISTS notification_service; DROP DATABASE IF EXISTS chat_service;"
-	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword) < infra/db/init/init-databases.sql
+	docker exec -it fn-mysql mysql -uroot -prootpassword -e "DROP DATABASE IF EXISTS auth_service; DROP DATABASE IF EXISTS user_service; DROP DATABASE IF EXISTS entity_service; DROP DATABASE IF EXISTS incident_service; DROP DATABASE IF EXISTS location_service; DROP DATABASE IF EXISTS monitoring_service; DROP DATABASE IF EXISTS notification_service; DROP DATABASE IF EXISTS chat_service;"
+	docker exec -i fn-mysql mysql -uroot -prootpassword < infra/db/init/init-databases.sql
 
 .PHONY: db-init
 db-init:
 	@echo "Initializing databases..."
-	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword) < infra/db/init/init-databases.sql
+	docker exec -i fn-mysql mysql -uroot -prootpassword < infra/db/init/init-databases.sql
 
 .PHONY: db-status
 db-status:
 	@echo "Checking database status..."
-	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword) -e "SHOW DATABASES;"
+	docker exec -it fn-mysql mysql -uroot -prootpassword -e "SHOW DATABASES;"
+
+.PHONY: db-check-connection
+db-check-connection:
+	@echo "Checking MySQL container status..."
+	@if docker ps | grep -q fn-mysql; then \
+		echo "✅ MySQL container is running"; \
+		echo "Checking MySQL connectivity..."; \
+		docker exec fn-mysql mysqladmin ping 2>/dev/null && echo "✅ MySQL is responding" || echo "❌ MySQL is not responding"; \
+	else \
+		echo "❌ MySQL container is not running"; \
+		echo "Run 'make infra-up' to start infrastructure"; \
+	fi
+
+.PHONY: db-debug
+db-debug:
+	@echo "🔍 MySQL Debug Information:"
+	@echo "Container status:"
+	@docker ps | grep mysql || echo "No MySQL containers running"
+	@echo ""
+	@echo "Container logs (last 20 lines):"
+	@docker logs --tail 20 fn-mysql 2>/dev/null || echo "Cannot get logs"
+	@echo ""
+	@echo "Environment variables:"
+	@docker exec fn-mysql env | grep MYSQL 2>/dev/null || echo "Cannot get environment"
+	@echo ""
+	@echo "Trying different connection methods:"
+	@echo "1. Root with no password:"
+	@docker exec fn-mysql mysql -uroot -e "SELECT 1;" 2>/dev/null && echo "✅ Root with no password works" || echo "❌ Root with no password failed"
+	@echo "2. Root with 'rootpassword':"
+	@docker exec fn-mysql mysql -uroot -prootpassword -e "SELECT 1;" 2>/dev/null && echo "✅ Root with 'rootpassword' works" || echo "❌ Root with 'rootpassword' failed"
+	@echo "3. Appuser with 'apppassword':"
+	@docker exec fn-mysql mysql -uappuser -papppassword -e "SELECT 1;" 2>/dev/null && echo "✅ Appuser works" || echo "❌ Appuser failed"
+
+.PHONY: db-reset-container
+db-reset-container:
+	@echo "🚨 RESETTING MySQL container (this will delete all data!)"
+	@read -p "Are you sure? Type 'yes' to continue: " confirm; \
+	if [ "$confirm" = "yes" ]; then \
+		echo "Stopping and removing MySQL container..."; \
+		docker-compose -f docker-compose.infra.yml stop mysql; \
+		docker-compose -f docker-compose.infra.yml rm -f mysql; \
+		echo "Removing MySQL volume..."; \
+		docker volume rm fn-go_mysql-data 2>/dev/null || true; \
+		echo "Starting fresh MySQL container..."; \
+		docker-compose -f docker-compose.infra.yml up -d mysql; \
+		echo "Waiting for MySQL to initialize..."; \
+		sleep 10; \
+		make db-debug; \
+	else \
+		echo "Reset cancelled."; \
+	fi
 
 # Local development with infrastructure
 .PHONY: dev-local
@@ -312,9 +379,12 @@ help:
 	@echo "    infra-logs           - Show infrastructure logs"
 	@echo "    infra-restart        - Restart infrastructure services"
 	@echo "    infra-clean          - Stop infrastructure and clean volumes"
+	@echo "    cleanup-ports        - Clean up port conflicts (kills processes on 4222, 8222)"
+	@echo "    force-infra-up       - Clean ports and start infrastructure"
 	@echo "    dev-local            - Start infrastructure and show connection info"
 	@echo ""
 	@echo "  Database:"
+	@echo "    db-check-connection  - Check MySQL container status"
 	@echo "    db-shell             - Connect to MySQL as appuser"
 	@echo "    db-root-shell        - Connect to MySQL as root"
 	@echo "    db-reset             - Reset all databases"
