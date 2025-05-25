@@ -80,27 +80,55 @@ force-infra-up: cleanup-ports infra-up
 # Database management (works with infra-only setup)
 .PHONY: db-shell
 db-shell:
-	docker exec -it fn-mysql mysql -u$(DB_USER:-appuser) -p$(DB_PASSWORD:-apppassword)
+	docker exec -it fn-mysql mysql -uappuser -papppassword
 
 .PHONY: db-root-shell
 db-root-shell:
-	docker exec -it fn-mysql mysql -uroot -prootpassword
+	docker exec -it fn-mysql mysql -uroot
 
 .PHONY: db-reset
 db-reset:
 	@echo "Resetting all databases..."
-	docker exec -it fn-mysql mysql -uroot -prootpassword -e "DROP DATABASE IF EXISTS auth_service; DROP DATABASE IF EXISTS user_service; DROP DATABASE IF EXISTS entity_service; DROP DATABASE IF EXISTS incident_service; DROP DATABASE IF EXISTS location_service; DROP DATABASE IF EXISTS monitoring_service; DROP DATABASE IF EXISTS notification_service; DROP DATABASE IF EXISTS chat_service;"
-	docker exec -i fn-mysql mysql -uroot -prootpassword < infra/db/init/init-databases.sql
+	docker exec -it fn-mysql mysql -uroot -e "DROP DATABASE IF EXISTS auth_service; DROP DATABASE IF EXISTS user_service; DROP DATABASE IF EXISTS entity_service; DROP DATABASE IF EXISTS incident_service; DROP DATABASE IF EXISTS location_service; DROP DATABASE IF EXISTS monitoring_service; DROP DATABASE IF EXISTS notification_service; DROP DATABASE IF EXISTS chat_service;"
+	docker exec -i fn-mysql mysql -uroot < infra/db/init/init-databases.sql
 
 .PHONY: db-init
 db-init:
 	@echo "Initializing databases..."
-	docker exec -i fn-mysql mysql -uroot -prootpassword < infra/db/init/init-databases.sql
+	docker exec -i fn-mysql mysql -uroot < infra/db/init/init-databases.sql
 
 .PHONY: db-status
 db-status:
 	@echo "Checking database status..."
-	docker exec -it fn-mysql mysql -uroot -prootpassword -e "SHOW DATABASES;"
+	docker exec -it fn-mysql mysql -uroot -e "SHOW DATABASES;"
+
+.PHONY: db-create-appuser
+db-create-appuser:
+	@echo "Creating appuser and databases..."
+	docker exec -it fn-mysql mysql -uroot -e "CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'apppassword';"
+	docker exec -it fn-mysql mysql -uroot -e "GRANT ALL PRIVILEGES ON *.* TO 'appuser'@'%' WITH GRANT OPTION;"
+	docker exec -it fn-mysql mysql -uroot -e "FLUSH PRIVILEGES;"
+	@echo "Creating databases..."
+	docker exec -it fn-mysql mysql -uroot -e "CREATE DATABASE IF NOT EXISTS auth_service;"
+	docker exec -it fn-mysql mysql -uroot -e "CREATE DATABASE IF NOT EXISTS user_service;"
+	docker exec -it fn-mysql mysql -uroot -e "CREATE DATABASE IF NOT EXISTS entity_service;"
+	docker exec -it fn-mysql mysql -uroot -e "CREATE DATABASE IF NOT EXISTS incident_service;"
+	docker exec -it fn-mysql mysql -uroot -e "CREATE DATABASE IF NOT EXISTS location_service;"
+	docker exec -it fn-mysql mysql -uroot -e "CREATE DATABASE IF NOT EXISTS monitoring_service;"
+	docker exec -it fn-mysql mysql -uroot -e "CREATE DATABASE IF NOT EXISTS notification_service;"
+	docker exec -it fn-mysql mysql -uroot -e "CREATE DATABASE IF NOT EXISTS chat_service;"
+	@echo "Granting privileges to appuser..."
+	docker exec -it fn-mysql mysql -uroot -e "GRANT ALL PRIVILEGES ON auth_service.* TO 'appuser'@'%';"
+	docker exec -it fn-mysql mysql -uroot -e "GRANT ALL PRIVILEGES ON user_service.* TO 'appuser'@'%';"
+	docker exec -it fn-mysql mysql -uroot -e "GRANT ALL PRIVILEGES ON entity_service.* TO 'appuser'@'%';"
+	docker exec -it fn-mysql mysql -uroot -e "GRANT ALL PRIVILEGES ON incident_service.* TO 'appuser'@'%';"
+	docker exec -it fn-mysql mysql -uroot -e "GRANT ALL PRIVILEGES ON location_service.* TO 'appuser'@'%';"
+	docker exec -it fn-mysql mysql -uroot -e "GRANT ALL PRIVILEGES ON monitoring_service.* TO 'appuser'@'%';"
+	docker exec -it fn-mysql mysql -uroot -e "GRANT ALL PRIVILEGES ON notification_service.* TO 'appuser'@'%';"
+	docker exec -it fn-mysql mysql -uroot -e "GRANT ALL PRIVILEGES ON chat_service.* TO 'appuser'@'%';"
+	docker exec -it fn-mysql mysql -uroot -e "FLUSH PRIVILEGES;"
+	@echo "✅ Setup complete! Testing appuser connection..."
+	docker exec -it fn-mysql mysql -uappuser -papppassword -e "SHOW DATABASES;"
 
 .PHONY: db-check-connection
 db-check-connection:
@@ -156,12 +184,28 @@ db-reset-container:
 # Local development with infrastructure
 .PHONY: dev-local
 dev-local: infra-up
-	@echo "Infrastructure started. You can now run services locally."
-	@echo "NATS: localhost:4222"
-	@echo "MySQL: localhost:3306"
-	@echo "Prometheus: http://localhost:9090"
-	@echo "Grafana: http://localhost:3000 (admin/admin)"
-	@echo "Redis: localhost:6379"
+	@echo "Infrastructure started. Setting up database..."
+	@sleep 5
+	@make db-create-appuser
+	@echo ""
+	@echo "🚀 Development environment ready!"
+	@echo ""
+	@echo "📊 Services available:"
+	@echo "  NATS: localhost:4222"
+	@echo "  NATS Monitor: http://localhost:8222"
+	@echo "  MySQL: localhost:3306"
+	@echo "  Prometheus: http://localhost:9090"
+	@echo "  Grafana: http://localhost:3000 (admin/admin)"
+	@echo "  Redis: localhost:6379"
+	@echo ""
+	@echo "🔐 Database credentials:"
+	@echo "  Root: root / (no password)"
+	@echo "  App:  appuser / apppassword"
+	@echo ""
+	@echo "▶️  Start your services:"
+	@echo "  make run-auth-service"
+	@echo "  make run-user-service"
+	@echo "  make run-gateway"
 
 # Docker build commands
 .PHONY: docker-build
@@ -334,18 +378,53 @@ $(addprefix lint-fix-,$(SERVICES)):
 	echo "Fixing lint issues in $$service..."; \
 	cd services/$$service && golangci-lint run --fix ./...
 
-# Migration commands
+# Migration commands (FIXED VERSION)
+
+.PHONY: migrate-all-up
+migrate-all-up:
+	@echo "Running migrations UP for all services..."
+	@for service in $(SERVICES); do \
+		db_name=$$(echo $$service | tr '-' '_'); \
+		echo "📊 Running migrations for $$service (database: $$db_name)..."; \
+		migrate -path services/$$service/migrations -database "mysql://appuser:apppassword@tcp(localhost:3306)/$$db_name" up || echo "❌ Failed to migrate $$service"; \
+		echo ""; \
+	done
+	@echo "✅ All migrations completed!"
+
+.PHONY: migrate-all-down
+migrate-all-down:
+	@echo "🚨 Running migrations DOWN for all services (this will rollback changes)..."
+	@read -p "Are you sure? Type 'yes' to continue: " confirm; \
+	if [ "$$confirm" = "yes" ]; then \
+		for service in $(SERVICES); do \
+			db_name=$$(echo $$service | tr '-' '_'); \
+			echo "📊 Rolling back migrations for $$service (database: $$db_name)..."; \
+			migrate -path services/$$service/migrations -database "mysql://appuser:apppassword@tcp(localhost:3306)/$$db_name" down || echo "❌ Failed to rollback $$service"; \
+			echo ""; \
+		done; \
+		echo "✅ All rollbacks completed!"; \
+	else \
+		echo "Rollback cancelled."; \
+	fi
+
+.PHONY: migrate-all-status
+migrate-all-status: migrate-status
+
+
+# INDIVIDUAL
 .PHONY: $(addprefix migrate-up-,$(SERVICES))
 $(addprefix migrate-up-,$(SERVICES)):
 	@service=$$(echo $@ | sed 's/migrate-up-//'); \
+	db_name=$$(echo $$service | tr '-' '_'); \
 	echo "Running migrations UP for $$service..."; \
-	migrate -path services/$$service/migrations -database "mysql://$(DB_USER:-appuser):$(DB_PASSWORD:-apppassword)@tcp(localhost:3306)/$${service//-/_}" up
+	migrate -path services/$$service/migrations -database "mysql://appuser:apppassword@tcp(localhost:3306)/$$db_name" up
 
 .PHONY: $(addprefix migrate-down-,$(SERVICES))
 $(addprefix migrate-down-,$(SERVICES)):
 	@service=$$(echo $@ | sed 's/migrate-down-//'); \
+	db_name=$$(echo $$service | tr '-' '_'); \
 	echo "Running migrations DOWN for $$service..."; \
-	migrate -path services/$$service/migrations -database "mysql://$(DB_USER:-appuser):$(DB_PASSWORD:-apppassword)@tcp(localhost:3306)/$${service//-/_}" down
+	migrate -path services/$$service/migrations -database "mysql://appuser:apppassword@tcp(localhost:3306)/$$db_name" down
 
 .PHONY: $(addprefix migrate-create-,$(SERVICES))
 $(addprefix migrate-create-,$(SERVICES)):
@@ -353,6 +432,24 @@ $(addprefix migrate-create-,$(SERVICES)):
 	read -p "Migration name: " name; \
 	echo "Creating migration for $$service: $$name"; \
 	migrate create -ext sql -dir services/$$service/migrations -seq $$name
+
+.PHONY: migrate-status
+migrate-status:
+	@echo "Checking migration status for all services..."
+	@for service in $(SERVICES); do \
+		db_name=$$(echo $$service | tr '-' '_'); \
+		echo "📊 $$service (database: $$db_name):"; \
+		migrate -path services/$$service/migrations -database "mysql://appuser:apppassword@tcp(localhost:3306)/$$db_name" version 2>/dev/null || echo "  No migrations applied yet"; \
+		echo ""; \
+	done
+
+.PHONY: migrate-force
+migrate-force:
+	@read -p "Enter service name: " service; \
+	read -p "Enter version to force: " version; \
+	db_name=$$(echo $$service | tr '-' '_'); \
+	echo "Forcing migration version $$version for $$service..."; \
+	migrate -path services/$$service/migrations -database "mysql://appuser:apppassword@tcp(localhost:3306)/$$db_name" force $$version
 
 # Clean
 .PHONY: clean
@@ -368,7 +465,7 @@ clean:
 help:
 	@echo "Available commands:"
 	@echo ""
-	  @echo "  Environment:"
+	@echo "  Environment:"
 	@echo "    setup-env-dev        - Create .env.dev files for all services"
 	@echo "    check-env            - Check status of environment files"
 	@echo "    clean-env            - Remove all .env.dev files"
@@ -385,9 +482,12 @@ help:
 	@echo ""
 	@echo "  Database:"
 	@echo "    db-check-connection  - Check MySQL container status"
+	@echo "    db-debug             - Debug MySQL connection issues"
+	@echo "    db-create-appuser    - Create appuser and databases (run this first!)"
 	@echo "    db-shell             - Connect to MySQL as appuser"
-	@echo "    db-root-shell        - Connect to MySQL as root"
+	@echo "    db-root-shell        - Connect to MySQL as root (no password)"
 	@echo "    db-reset             - Reset all databases"
+	@echo "    db-reset-container   - Reset entire MySQL container (DESTRUCTIVE)"
 	@echo "    db-init              - Initialize databases"
 	@echo "    db-status            - Show database status"
 	@echo ""
@@ -431,9 +531,11 @@ help:
 	@echo "    lint-fix-[service]   - Fix linting issues in specific service"
 	@echo ""
 	@echo "  Migrations:"
-	@echo "    migrate-up-[service]   - Run migrations up for specific service"
-	@echo "    migrate-down-[service] - Run migrations down for specific service"
+	@echo "    migrate-up-[service]     - Run migrations up for specific service"
+	@echo "    migrate-down-[service]   - Run migrations down for specific service"
 	@echo "    migrate-create-[service] - Create new migration for specific service"
+	@echo "    migrate-status           - Check migration status for all services"
+	@echo "    migrate-force            - Force migration version (use with caution)"
 	@echo ""
 	@echo "  Other:"
 	@echo "    clean                - Clean up build artifacts and Docker resources"
