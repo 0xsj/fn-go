@@ -1,6 +1,67 @@
 # Variables
 SERVICES := user-service auth-service entity-service incident-service location-service notification-service monitoring-service chat-service
 
+# Infrastructure-only commands
+.PHONY: infra-up
+infra-up:
+	@echo "Starting infrastructure services (MySQL, NATS, Prometheus, Grafana, Redis)..."
+	docker-compose -f docker-compose.infrastructure.yml up -d
+
+.PHONY: infra-down
+infra-down:
+	@echo "Stopping infrastructure services..."
+	docker-compose -f docker-compose.infrastructure.yml down
+
+.PHONY: infra-logs
+infra-logs:
+	docker-compose -f docker-compose.infrastructure.yml logs -f
+
+.PHONY: infra-restart
+infra-restart:
+	@echo "Restarting infrastructure services..."
+	docker-compose -f docker-compose.infrastructure.yml restart
+
+.PHONY: infra-clean
+infra-clean:
+	@echo "Cleaning infrastructure services and volumes..."
+	docker-compose -f docker-compose.infrastructure.yml down -v
+	docker system prune -f
+
+# Database management (works with infra-only setup)
+.PHONY: db-shell
+db-shell:
+	docker exec -it fn-mysql mysql -u$(DB_USER:-appuser) -p$(DB_PASSWORD:-apppassword)
+
+.PHONY: db-root-shell
+db-root-shell:
+	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword)
+
+.PHONY: db-reset
+db-reset:
+	@echo "Resetting all databases..."
+	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword) -e "DROP DATABASE IF EXISTS auth_service; DROP DATABASE IF EXISTS user_service; DROP DATABASE IF EXISTS entity_service; DROP DATABASE IF EXISTS incident_service; DROP DATABASE IF EXISTS location_service; DROP DATABASE IF EXISTS monitoring_service; DROP DATABASE IF EXISTS notification_service; DROP DATABASE IF EXISTS chat_service;"
+	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword) < infra/db/init/init-databases.sql
+
+.PHONY: db-init
+db-init:
+	@echo "Initializing databases..."
+	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword) < infra/db/init/init-databases.sql
+
+.PHONY: db-status
+db-status:
+	@echo "Checking database status..."
+	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD:-rootpassword) -e "SHOW DATABASES;"
+
+# Local development with infrastructure
+.PHONY: dev-local
+dev-local: infra-up
+	@echo "Infrastructure started. You can now run services locally."
+	@echo "NATS: localhost:4222"
+	@echo "MySQL: localhost:3306"
+	@echo "Prometheus: http://localhost:9090"
+	@echo "Grafana: http://localhost:3000 (admin/admin)"
+	@echo "Redis: localhost:6379"
+
 # Docker build commands
 .PHONY: docker-build
 docker-build:
@@ -14,7 +75,7 @@ docker-up:
 docker-down:
 	docker-compose down
 
-# Docker development environment
+# Docker development environment (full stack)
 .PHONY: dev-up
 dev-up:
 	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
@@ -33,16 +94,6 @@ dev-restart:
 	@read -p "Enter service name: " service; \
 	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build $$service
 
-# Database management
-.PHONY: db-shell
-db-shell:
-	docker exec -it fn-mysql mysql -u$(DB_USER) -p$(DB_PASSWORD)
-
-.PHONY: db-reset
-db-reset:
-	docker exec -it fn-mysql mysql -uroot -p$(DB_ROOT_PASSWORD) -e "DROP DATABASE IF EXISTS auth_service; DROP DATABASE IF EXISTS user_service; DROP DATABASE IF EXISTS entity_service; DROP DATABASE IF EXISTS incident_service; DROP DATABASE IF EXISTS location_service; DROP DATABASE IF EXISTS monitoring_service; DROP DATABASE IF EXISTS notification_service; DROP DATABASE IF EXISTS chat_service;"
-	docker exec -it fn-mysql bash -c "cd /docker-entrypoint-initdb.d && mysql -uroot -p$(DB_ROOT_PASSWORD) < init-databases.sql"
-
 # Deploy to production
 .PHONY: prod-build
 prod-build:
@@ -56,7 +107,6 @@ prod-up:
 prod-down:
 	docker-compose down
 
-
 # Kubernetes commands
 .PHONY: k8s-apply
 k8s-apply:
@@ -65,15 +115,6 @@ k8s-apply:
 .PHONY: k8s-delete
 k8s-delete:
 	kubectl delete -f infra/k8s/
-
-# Observability commands
-.PHONY: obs-up
-obs-up:
-	docker-compose -f infra/observability/docker-compose.yml up -d
-
-.PHONY: obs-down
-obs-down:
-	docker-compose -f infra/observability/docker-compose.yml down
 
 # Build commands for individual services
 .PHONY: build-all
@@ -89,10 +130,9 @@ $(addprefix build-,$(SERVICES)):
 	echo "Building $$service..."; \
 	go build -o bin/$$service ./services/$$service/cmd/server
 
-# Run commands for individual services
+# Run commands for individual services (assumes infrastructure is running)
 .PHONY: run-all
 run-all:
-	nats-server & \
 	for service in $(SERVICES); do \
 		echo "Starting $$service..."; \
 		go run ./services/$$service/cmd/server/main.go & \
@@ -107,14 +147,13 @@ $(addprefix run-,$(SERVICES)):
 
 .PHONY: run-gateway
 run-gateway:
-	cd gateway && go run main.go
+	cd gateway && go run cmd/server/main.go
 
 .PHONY: run-local
 run-local:
-	nats-server & \
 	cd services/user-service && go run cmd/server/main.go & \
 	cd services/auth-service && go run cmd/server/main.go & \
-	cd gateway && go run main.go
+	cd gateway && go run cmd/server/main.go
 
 # Docker build commands for individual services
 .PHONY: $(addprefix docker-build-,$(SERVICES))
@@ -142,7 +181,6 @@ test-coverage:
 	done
 	cd gateway && go test ./... -coverprofile=../gateway_coverage.out && cd ..
 	echo "Merging coverage reports..."
-	# You might need to implement custom merge logic here
 
 .PHONY: $(addprefix test-,$(SERVICES))
 $(addprefix test-,$(SERVICES)):
@@ -200,13 +238,13 @@ $(addprefix lint-fix-,$(SERVICES)):
 $(addprefix migrate-up-,$(SERVICES)):
 	@service=$$(echo $@ | sed 's/migrate-up-//'); \
 	echo "Running migrations UP for $$service..."; \
-	migrate -path services/$$service/migrations -database "mysql://user:password@tcp(localhost:3306)/$$service" up
+	migrate -path services/$$service/migrations -database "mysql://$(DB_USER:-appuser):$(DB_PASSWORD:-apppassword)@tcp(localhost:3306)/$${service//-/_}" up
 
 .PHONY: $(addprefix migrate-down-,$(SERVICES))
 $(addprefix migrate-down-,$(SERVICES)):
 	@service=$$(echo $@ | sed 's/migrate-down-//'); \
 	echo "Running migrations DOWN for $$service..."; \
-	migrate -path services/$$service/migrations -database "mysql://user:password@tcp(localhost:3306)/$$service" down
+	migrate -path services/$$service/migrations -database "mysql://$(DB_USER:-appuser):$(DB_PASSWORD:-apppassword)@tcp(localhost:3306)/$${service//-/_}" down
 
 .PHONY: $(addprefix migrate-create-,$(SERVICES))
 $(addprefix migrate-create-,$(SERVICES)):
@@ -220,6 +258,7 @@ $(addprefix migrate-create-,$(SERVICES)):
 clean:
 	go clean
 	docker-compose down -v
+	docker-compose -f docker-compose.infrastructure.yml down -v
 	rm -rf bin/
 	docker system prune -f
 
@@ -227,29 +266,47 @@ clean:
 .PHONY: help
 help:
 	@echo "Available commands:"
-	@echo "  Docker:"
+	@echo ""
+	@echo "  Infrastructure (for local development):"
+	@echo "    infra-up             - Start infrastructure services only (MySQL, NATS, etc.)"
+	@echo "    infra-down           - Stop infrastructure services"
+	@echo "    infra-logs           - Show infrastructure logs"
+	@echo "    infra-restart        - Restart infrastructure services"
+	@echo "    infra-clean          - Stop infrastructure and clean volumes"
+	@echo "    dev-local            - Start infrastructure and show connection info"
+	@echo ""
+	@echo "  Database:"
+	@echo "    db-shell             - Connect to MySQL as appuser"
+	@echo "    db-root-shell        - Connect to MySQL as root"
+	@echo "    db-reset             - Reset all databases"
+	@echo "    db-init              - Initialize databases"
+	@echo "    db-status            - Show database status"
+	@echo ""
+	@echo "  Docker (full stack):"
 	@echo "    docker-build         - Build all Docker images"
 	@echo "    docker-up            - Start all containers with docker-compose"
 	@echo "    docker-down          - Stop all containers with docker-compose"
 	@echo "    docker-build-[service] - Build Docker image for specific service"
 	@echo ""
+	@echo "  Development (full stack):"
+	@echo "    dev-up               - Start all services in development mode"
+	@echo "    dev-down             - Stop all development services"
+	@echo "    dev-logs             - Show development logs"
+	@echo "    dev-restart          - Restart specific development service"
+	@echo ""
 	@echo "  Kubernetes:"
 	@echo "    k8s-apply            - Apply all Kubernetes manifests"
 	@echo "    k8s-delete           - Delete all Kubernetes manifests"
-	@echo ""
-	@echo "  Observability:"
-	@echo "    obs-up               - Start observability stack (Grafana, Prometheus)"
-	@echo "    obs-down             - Stop observability stack"
 	@echo ""
 	@echo "  Build:"
 	@echo "    build-all            - Build all services"
 	@echo "    build-[service]      - Build specific service"
 	@echo ""
-	@echo "  Run:"
-	@echo "    run-all              - Run all services"
-	@echo "    run-[service]        - Run specific service"
-	@echo "    run-gateway          - Run API gateway"
-	@echo "    run-local            - Run minimal set of services for local development"
+	@echo "  Run (requires infrastructure):"
+	@echo "    run-all              - Run all services locally"
+	@echo "    run-[service]        - Run specific service locally"
+	@echo "    run-gateway          - Run API gateway locally"
+	@echo "    run-local            - Run minimal set of services locally"
 	@echo ""
 	@echo "  Testing:"
 	@echo "    test                 - Run all tests"
