@@ -2,8 +2,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/0xsj/fn-go/pkg/common/errors"
 )
 
@@ -73,22 +71,32 @@ func init() {
 // NewUserNotFoundError creates a new user not found error
 func NewUserNotFoundError(userID string) error {
 	return errors.ErrorFromCode(ErrCodeUserNotFound, 
-		fmt.Sprintf("User with ID %s not found", userID), 
-		errors.ErrNotFound)
+		"User not found", 
+		errors.ErrNotFound).WithField("userID", userID)
 }
 
 // NewUserAlreadyExistsError creates a new user already exists error
 func NewUserAlreadyExistsError(identifier string) error {
 	return errors.ErrorFromCode(ErrCodeUserAlreadyExists, 
-		fmt.Sprintf("User with identifier %s already exists", identifier), 
-		errors.ErrDuplicateEntry)
+		"User already exists", 
+		errors.ErrDuplicateEntry).WithField("identifier", identifier)
 }
 
 // NewInvalidUserInputError creates a new invalid user input error
 func NewInvalidUserInputError(message string, err error) error {
-	return errors.ErrorFromCode(ErrCodeInvalidUserInput, 
-		message, 
-		errors.ErrValidationFailed).WithField("error_details", err)
+	return errors.ErrorFromCode(ErrCodeInvalidUserInput, message, err)
+}
+
+// NewInvalidUserInputWithValidation creates a new invalid user input error with validation details
+func NewInvalidUserInputWithValidation(message string, validationErrors map[string]string) error {
+	return errors.ErrorFromCode(ErrCodeInvalidUserInput, message, errors.ErrValidationFailed).
+		WithField("validation_errors", validationErrors)
+}
+
+// NewInvalidUserInputWithFields creates a new invalid user input error with custom fields
+func NewInvalidUserInputWithFields(message string, err error, fields map[string]any) error {
+	return errors.ErrorFromCode(ErrCodeInvalidUserInput, message, err).
+		WithFields(fields)
 }
 
 // NewPasswordMismatchError creates a new password mismatch error
@@ -101,15 +109,15 @@ func NewPasswordMismatchError() error {
 // NewEmailAlreadyVerifiedError creates a new email already verified error
 func NewEmailAlreadyVerifiedError(userID string) error {
 	return errors.ErrorFromCode(ErrCodeEmailAlreadyVerified, 
-		fmt.Sprintf("Email for user %s is already verified", userID), 
-		errors.ErrDuplicateEntry)
+		"Email already verified", 
+		errors.ErrDuplicateEntry).WithField("userID", userID)
 }
 
 // NewInvalidRoleError creates a new invalid role error
 func NewInvalidRoleError(role string) error {
 	return errors.ErrorFromCode(ErrCodeInvalidRole, 
-		fmt.Sprintf("Role %s is not valid", role), 
-		errors.ErrInvalidInput)
+		"Invalid role", 
+		errors.ErrInvalidInput).WithField("role", role)
 }
 
 // NewInvalidCredentialsError creates a new invalid credentials error
@@ -122,15 +130,15 @@ func NewInvalidCredentialsError() error {
 // NewAccountLockedError creates a new account locked error
 func NewAccountLockedError(userID string) error {
 	return errors.ErrorFromCode(ErrCodeAccountLocked, 
-		fmt.Sprintf("Account with ID %s is locked due to too many failed login attempts", userID), 
-		errors.ErrForbidden)
+		"Account locked due to too many failed login attempts", 
+		errors.ErrForbidden).WithField("userID", userID)
 }
 
 // NewAccountInactiveError creates a new account inactive error
 func NewAccountInactiveError(userID string) error {
 	return errors.ErrorFromCode(ErrCodeAccountInactive, 
-		fmt.Sprintf("Account with ID %s is inactive", userID), 
-		errors.ErrForbidden)
+		"Account is inactive", 
+		errors.ErrForbidden).WithField("userID", userID)
 }
 
 // Expose error checking functions from the errors package
@@ -168,8 +176,17 @@ func Wrap(err error, message string) error {
 	return errors.Wrap(err, message)
 }
 
-// Get AppError from error interface if it is one
-func GetAppError(err error) (*errors.AppError, bool) {
-    appErr, ok := err.(*errors.AppError)
-    return appErr, ok
+// WithOperation adds operation context to an error if it's an AppError
+func WithOperation(err error, operation string) error {
+	return errors.WithOperation(err, operation)
+}
+
+// WithField adds a field to an error if it's an AppError
+func WithField(err error, key string, value any) error {
+	return errors.WithField(err, key, value)
+}
+
+// WithFields adds multiple fields to an error if it's an AppError
+func WithFields(err error, fields map[string]any) error {
+	return errors.WithFields(err, fields)
 }

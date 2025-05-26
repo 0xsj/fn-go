@@ -11,7 +11,7 @@ type CreateUserRequest struct {
 	PhoneNumber     string   `json:"phoneNumber" validate:"omitempty"`
 	ProfileImageURL string   `json:"profileImageUrl" validate:"omitempty,url"`
 	Roles           []string `json:"roles" validate:"omitempty"`
-	Metadata        map[string]interface{} `json:"metadata" validate:"omitempty"`
+	Metadata        map[string]any `json:"metadata" validate:"omitempty"`
 }
 
 // UpdateUserRequest represents the request to update an existing user
@@ -22,9 +22,11 @@ type UpdateUserRequest struct {
 	LastName        *string  `json:"lastName" validate:"omitempty"`
 	PhoneNumber     *string  `json:"phoneNumber" validate:"omitempty"`
 	ProfileImageURL *string  `json:"profileImageUrl" validate:"omitempty,url"`
+	Role            *string  `json:"role" validate:"omitempty,oneof=admin customer dispatcher"`
 	IsActive        *bool    `json:"isActive" validate:"omitempty"`
-	Metadata        map[string]interface{} `json:"metadata" validate:"omitempty"`
+	Metadata        map[string]any `json:"metadata" validate:"omitempty"`
 }
+
 
 // UpdateProfileRequest represents the request to update a user's profile
 type UpdateProfileRequest struct {
@@ -32,7 +34,7 @@ type UpdateProfileRequest struct {
 	LastName        *string  `json:"lastName" validate:"omitempty"`
 	PhoneNumber     *string  `json:"phoneNumber" validate:"omitempty"`
 	ProfileImageURL *string  `json:"profileImageUrl" validate:"omitempty,url"`
-	Metadata        map[string]interface{} `json:"metadata" validate:"omitempty"`
+	Metadata        map[string]any `json:"metadata" validate:"omitempty"`
 }
 
 // UpdatePasswordRequest represents the request to update a user's password

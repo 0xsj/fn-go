@@ -38,7 +38,7 @@ type MessageEnvelope struct {
 }
 
 // NewMessageEnvelope creates a new message envelope
-func NewMessageEnvelope(subject string, source string, sourceID string, data interface{}) (*MessageEnvelope, error) {
+func NewMessageEnvelope(subject string, source string, sourceID string, data any) (*MessageEnvelope, error) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.NewInternalError("failed to marshal message data", err)
@@ -78,7 +78,7 @@ func (e *MessageEnvelope) AddMetadata(key, value string) *MessageEnvelope {
 }
 
 // Unmarshal deserializes the data payload into the provided struct
-func (e *MessageEnvelope) Unmarshal(v interface{}) error {
+func (e *MessageEnvelope) Unmarshal(v any) error {
 	return json.Unmarshal(e.Data, v)
 }
 
@@ -121,7 +121,7 @@ func NewPublisher(nc *nats.Conn, source string, logger log.Logger, opts ...Publi
 }
 
 // Publish publishes a message to the specified subject
-func (p *Publisher) Publish(ctx context.Context, subject string, data interface{}) error {
+func (p *Publisher) Publish(ctx context.Context, subject string, data any) error {
 	envelope, err := NewMessageEnvelope(subject, p.source, p.sourceID, data)
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (p *Publisher) PublishEnvelope(ctx context.Context, subject string, envelop
 }
 
 // PublishWithMetadata publishes a message with additional metadata
-func (p *Publisher) PublishWithMetadata(ctx context.Context, subject string, data interface{}, metadata map[string]string) error {
+func (p *Publisher) PublishWithMetadata(ctx context.Context, subject string, data any, metadata map[string]string) error {
 	envelope, err := NewMessageEnvelope(subject, p.source, p.sourceID, data)
 	if err != nil {
 		return err

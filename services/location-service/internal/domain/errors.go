@@ -2,8 +2,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/0xsj/fn-go/pkg/common/errors"
 )
 
@@ -85,43 +83,49 @@ func init() {
 // NewLocationNotFoundError creates a new location not found error
 func NewLocationNotFoundError(locationID string) error {
 	return errors.ErrorFromCode(ErrCodeLocationNotFound, 
-		fmt.Sprintf("Location with ID %s not found", locationID), 
-		errors.ErrNotFound)
+		"Location not found", 
+		errors.ErrNotFound).WithField("locationID", locationID)
 }
 
 // NewLocationAlreadyExistsError creates a new location already exists error
 func NewLocationAlreadyExistsError(identifier string) error {
 	return errors.ErrorFromCode(ErrCodeLocationAlreadyExists, 
-		fmt.Sprintf("Location with identifier %s already exists", identifier), 
-		errors.ErrDuplicateEntry)
+		"Location already exists", 
+		errors.ErrDuplicateEntry).WithField("identifier", identifier)
 }
 
 // NewInvalidLocationInputError creates a new invalid location input error
 func NewInvalidLocationInputError(message string, err error) error {
-	return errors.ErrorFromCode(ErrCodeInvalidLocationInput, 
-		message, 
-		errors.ErrValidationFailed).WithField("error_details", err)
+	return errors.ErrorFromCode(ErrCodeInvalidLocationInput, message, err)
+}
+
+// NewInvalidLocationInputWithValidation creates a new invalid location input error with validation details
+func NewInvalidLocationInputWithValidation(message string, validationErrors map[string]string) error {
+	return errors.ErrorFromCode(ErrCodeInvalidLocationInput, message, errors.ErrValidationFailed).
+		WithField("validation_errors", validationErrors)
 }
 
 // NewLocationInUseError creates a new location in use error
 func NewLocationInUseError(locationID string) error {
 	return errors.ErrorFromCode(ErrCodeLocationInUse, 
-		fmt.Sprintf("Location with ID %s is in use and cannot be deleted or modified", locationID), 
-		errors.ErrDuplicateEntry)
+		"Location is in use and cannot be deleted or modified", 
+		errors.ErrDuplicateEntry).WithField("locationID", locationID)
 }
 
 // NewInvalidCoordinatesError creates a new invalid coordinates error
 func NewInvalidCoordinatesError(latitude, longitude float64) error {
 	return errors.ErrorFromCode(ErrCodeInvalidCoordinates, 
-		fmt.Sprintf("Invalid coordinates: latitude %f, longitude %f", latitude, longitude), 
-		errors.ErrValidationFailed)
+		"Invalid coordinates", 
+		errors.ErrValidationFailed).
+		WithField("latitude", latitude).
+		WithField("longitude", longitude)
 }
 
 // NewGeocodeFailureError creates a new geocode failure error
 func NewGeocodeFailureError(address string, err error) error {
 	return errors.ErrorFromCode(ErrCodeGeocodeFailure, 
-		fmt.Sprintf("Failed to geocode address: %s", address), 
-		errors.ErrExternalService).WithField("error_details", err)
+		"Failed to geocode address", 
+		err).WithField("address", address)
 }
 
 // NewInvalidAddressError creates a new invalid address error
@@ -134,29 +138,33 @@ func NewInvalidAddressError(message string) error {
 // NewMaxNestingExceededError creates a new max nesting exceeded error
 func NewMaxNestingExceededError(locationID string, maxNesting int) error {
 	return errors.ErrorFromCode(ErrCodeMaxNestingExceeded, 
-		fmt.Sprintf("Adding location to parent %s would exceed the maximum nesting level of %d", locationID, maxNesting), 
-		errors.ErrInvalidInput)
+		"Maximum nesting level exceeded", 
+		errors.ErrInvalidInput).
+		WithField("locationID", locationID).
+		WithField("maxNesting", maxNesting)
 }
 
 // NewParentNotFoundError creates a new parent not found error
 func NewParentNotFoundError(parentID string) error {
 	return errors.ErrorFromCode(ErrCodeParentNotFound, 
-		fmt.Sprintf("Parent location with ID %s not found", parentID), 
-		errors.ErrNotFound)
+		"Parent location not found", 
+		errors.ErrNotFound).WithField("parentID", parentID)
 }
 
 // NewCircularReferenceError creates a new circular reference error
 func NewCircularReferenceError(locationID string, parentID string) error {
 	return errors.ErrorFromCode(ErrCodeCircularReference, 
-		fmt.Sprintf("Circular reference detected: location %s cannot have parent %s", locationID, parentID), 
-		errors.ErrInvalidInput)
+		"Circular reference detected", 
+		errors.ErrInvalidInput).
+		WithField("locationID", locationID).
+		WithField("parentID", parentID)
 }
 
 // NewInvalidLocationTypeError creates a new invalid location type error
 func NewInvalidLocationTypeError(locationType string) error {
 	return errors.ErrorFromCode(ErrCodeInvalidLocationType, 
-		fmt.Sprintf("Location type %s is not valid", locationType), 
-		errors.ErrInvalidInput)
+		"Invalid location type", 
+		errors.ErrInvalidInput).WithField("locationType", locationType)
 }
 
 // Expose error checking functions from the errors package
@@ -165,6 +173,8 @@ var (
 	IsConflict = errors.IsConflict
 	IsValidationError = errors.IsValidationError
 	IsExternalServiceError = errors.IsExternalServiceError
+	IsUnauthorized = errors.IsUnauthorized
+	IsForbidden = errors.IsForbidden
 	
 	// Add domain-specific error checks
 	IsLocationNotFound = func(err error) bool {
@@ -173,6 +183,10 @@ var (
 	
 	IsLocationAlreadyExists = func(err error) bool {
 		return errors.IsErrorCode(err, ErrCodeLocationAlreadyExists)
+	}
+	
+	IsInvalidLocationInput = func(err error) bool {
+		return errors.IsErrorCode(err, ErrCodeInvalidLocationInput)
 	}
 	
 	IsLocationInUse = func(err error) bool {
@@ -187,12 +201,24 @@ var (
 		return errors.IsErrorCode(err, ErrCodeGeocodeFailure)
 	}
 	
+	IsInvalidAddress = func(err error) bool {
+		return errors.IsErrorCode(err, ErrCodeInvalidAddress)
+	}
+	
 	IsMaxNestingExceeded = func(err error) bool {
 		return errors.IsErrorCode(err, ErrCodeMaxNestingExceeded)
 	}
 	
+	IsParentNotFound = func(err error) bool {
+		return errors.IsErrorCode(err, ErrCodeParentNotFound)
+	}
+	
 	IsCircularReference = func(err error) bool {
 		return errors.IsErrorCode(err, ErrCodeCircularReference)
+	}
+	
+	IsInvalidLocationType = func(err error) bool {
+		return errors.IsErrorCode(err, ErrCodeInvalidLocationType)
 	}
 )
 
@@ -201,8 +227,17 @@ func Wrap(err error, message string) error {
 	return errors.Wrap(err, message)
 }
 
-// Get AppError from error interface if it is one
-func GetAppError(err error) (*errors.AppError, bool) {
-    appErr, ok := err.(*errors.AppError)
-    return appErr, ok
+// WithOperation adds operation context to an error if it's an AppError
+func WithOperation(err error, operation string) error {
+	return errors.WithOperation(err, operation)
+}
+
+// WithField adds a field to an error if it's an AppError
+func WithField(err error, key string, value any) error {
+	return errors.WithField(err, key, value)
+}
+
+// WithFields adds multiple fields to an error if it's an AppError
+func WithFields(err error, fields map[string]any) error {
+	return errors.WithFields(err, fields)
 }

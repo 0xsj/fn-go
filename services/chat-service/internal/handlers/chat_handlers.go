@@ -44,7 +44,7 @@ func (h *ChatHandler) RegisterHandlers(conn *nats.Conn) {
 }
 
 // CreateChat handles requests to create a new chat
-func (h *ChatHandler) CreateChat(data []byte) (interface{}, error) {
+func (h *ChatHandler) CreateChat(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "chat.create")
 	handlerLogger.Info("Received chat.create request")
 	
@@ -86,7 +86,7 @@ func (h *ChatHandler) CreateChat(data []byte) (interface{}, error) {
 }
 
 // GetChat handles requests to get a chat by ID
-func (h *ChatHandler) GetChat(data []byte) (interface{}, error) {
+func (h *ChatHandler) GetChat(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "chat.get")
 	handlerLogger.Info("Received chat.get request")
 	
@@ -142,7 +142,7 @@ func (h *ChatHandler) GetChat(data []byte) (interface{}, error) {
 }
 
 // ListChats handles requests to list chats
-func (h *ChatHandler) ListChats(data []byte) (interface{}, error) {
+func (h *ChatHandler) ListChats(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "chat.list")
 	handlerLogger.Info("Received chat.list request")
 	
@@ -191,7 +191,7 @@ func (h *ChatHandler) ListChats(data []byte) (interface{}, error) {
 }
 
 // SendMessage handles requests to send a message
-func (h *ChatHandler) SendMessage(data []byte) (interface{}, error) {
+func (h *ChatHandler) SendMessage(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "chat.message.send")
 	handlerLogger.Info("Received chat.message.send request")
 	
@@ -236,7 +236,7 @@ func (h *ChatHandler) SendMessage(data []byte) (interface{}, error) {
 }
 
 // ListMessages handles requests to list messages in a chat
-func (h *ChatHandler) ListMessages(data []byte) (interface{}, error) {
+func (h *ChatHandler) ListMessages(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "chat.message.list")
 	handlerLogger.Info("Received chat.message.list request")
 	

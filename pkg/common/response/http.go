@@ -55,7 +55,7 @@ func NewHTTP(logger log.Logger, opts ...HTTPOptions) *HTTPHandler {
 	}
 }
 
-func (h *HTTPHandler) Write(w http.ResponseWriter, statusCode int, data interface{}, format FormatType) error {
+func (h *HTTPHandler) Write(w http.ResponseWriter, statusCode int, data any, format FormatType) error {
 	contentType := string(format)
 	if h.options.DefaultEncoding != "" {
 		contentType = fmt.Sprintf("%s; charset=%s", format, h.options.DefaultEncoding)
@@ -85,15 +85,15 @@ func (h *HTTPHandler) Write(w http.ResponseWriter, statusCode int, data interfac
 	}
 }
 
-func (h *HTTPHandler) JSON(w http.ResponseWriter, statusCode int, data interface{}) error {
+func (h *HTTPHandler) JSON(w http.ResponseWriter, statusCode int, data any) error {
 	return h.Write(w, statusCode, data, JSON)
 }
 
-func (h *HTTPHandler) XML(w http.ResponseWriter, statusCode int, data interface{}) error {
+func (h *HTTPHandler) XML(w http.ResponseWriter, statusCode int, data any) error {
 	return h.Write(w, statusCode, data, XML)
 }
 
-func (h *HTTPHandler) Success(w http.ResponseWriter, data interface{}, message string, statusCode ...int) error {
+func (h *HTTPHandler) Success(w http.ResponseWriter, data any, message string, statusCode ...int) error {
 	resp := Response{
 		Success: true,
 		Data:    data,
@@ -112,15 +112,15 @@ func (h *HTTPHandler) Success(w http.ResponseWriter, data interface{}, message s
 	return h.Write(w, code, resp, format)
 }
 
-func (h *HTTPHandler) Created(w http.ResponseWriter, data interface{}, message string) error {
+func (h *HTTPHandler) Created(w http.ResponseWriter, data any, message string) error {
 	return h.Success(w, data, message, http.StatusCreated)
 }
 
-func (h *HTTPHandler) Accepted(w http.ResponseWriter, data interface{}, message string) error {
+func (h *HTTPHandler) Accepted(w http.ResponseWriter, data any, message string) error {
 	return h.Success(w, data, message, http.StatusAccepted)
 }
 
-func (h *HTTPHandler) WithPagination(w http.ResponseWriter, data interface{}, meta PaginationMeta) error {
+func (h *HTTPHandler) WithPagination(w http.ResponseWriter, data any, meta PaginationMeta) error {
 	resp := Response{
 		Success: true,
 		Data:    data,
@@ -135,7 +135,7 @@ func (h *HTTPHandler) NoContent(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *HTTPHandler) Error(w http.ResponseWriter, err ErrorResponse, details ...interface{}) error {
+func (h *HTTPHandler) Error(w http.ResponseWriter, err ErrorResponse, details ...any) error {
 	if len(details) > 0 {
 		err.Details = details[0]
 	}

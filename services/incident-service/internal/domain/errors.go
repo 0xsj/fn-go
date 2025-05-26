@@ -2,8 +2,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/0xsj/fn-go/pkg/common/errors"
 )
 
@@ -79,71 +77,84 @@ func init() {
 // NewIncidentNotFoundError creates a new incident not found error
 func NewIncidentNotFoundError(incidentID string) error {
 	return errors.ErrorFromCode(ErrCodeIncidentNotFound, 
-		fmt.Sprintf("Incident with ID %s not found", incidentID), 
-		errors.ErrNotFound)
+		"Incident not found", 
+		errors.ErrNotFound).WithField("incidentID", incidentID)
 }
 
 // NewIncidentAlreadyExistsError creates a new incident already exists error
 func NewIncidentAlreadyExistsError(identifier string) error {
 	return errors.ErrorFromCode(ErrCodeIncidentAlreadyExists, 
-		fmt.Sprintf("Incident with identifier %s already exists", identifier), 
-		errors.ErrDuplicateEntry)
+		"Incident already exists", 
+		errors.ErrDuplicateEntry).WithField("identifier", identifier)
 }
 
 // NewInvalidIncidentInputError creates a new invalid incident input error
 func NewInvalidIncidentInputError(message string, err error) error {
-	return errors.ErrorFromCode(ErrCodeInvalidIncidentInput, 
-		message, 
-		errors.ErrValidationFailed).WithField("error_details", err)
+	return errors.ErrorFromCode(ErrCodeInvalidIncidentInput, message, err)
+}
+
+// NewInvalidIncidentInputWithValidation creates a new invalid incident input error with validation details
+func NewInvalidIncidentInputWithValidation(message string, validationErrors map[string]string) error {
+	return errors.ErrorFromCode(ErrCodeInvalidIncidentInput, message, errors.ErrValidationFailed).
+		WithField("validation_errors", validationErrors)
 }
 
 // NewIncidentClosedError creates a new incident closed error
 func NewIncidentClosedError(incidentID string) error {
 	return errors.ErrorFromCode(ErrCodeIncidentClosed, 
-		fmt.Sprintf("Incident with ID %s is already closed and cannot be modified", incidentID), 
-		errors.ErrInvalidInput)
+		"Incident is already closed and cannot be modified", 
+		errors.ErrInvalidInput).WithField("incidentID", incidentID)
 }
 
 // NewIncidentResolvedError creates a new incident resolved error
 func NewIncidentResolvedError(incidentID string) error {
 	return errors.ErrorFromCode(ErrCodeIncidentResolved, 
-		fmt.Sprintf("Incident with ID %s is already resolved", incidentID), 
-		errors.ErrInvalidInput)
+		"Incident is already resolved", 
+		errors.ErrInvalidInput).WithField("incidentID", incidentID)
 }
 
 // NewInvalidStatusTransitionError creates a new invalid status transition error
 func NewInvalidStatusTransitionError(incidentID string, currentStatus, targetStatus string) error {
 	return errors.ErrorFromCode(ErrCodeInvalidStatusTransition, 
-		fmt.Sprintf("Cannot transition incident %s from %s to %s", incidentID, currentStatus, targetStatus), 
-		errors.ErrInvalidInput)
+		"Invalid status transition", 
+		errors.ErrInvalidInput).
+		WithField("incidentID", incidentID).
+		WithField("currentStatus", currentStatus).
+		WithField("targetStatus", targetStatus)
 }
 
 // NewInvalidPriorityError creates a new invalid priority error
 func NewInvalidPriorityError(priority string) error {
 	return errors.ErrorFromCode(ErrCodeInvalidPriority, 
-		fmt.Sprintf("Priority %s is not valid", priority), 
-		errors.ErrInvalidInput)
+		"Invalid priority", 
+		errors.ErrInvalidInput).WithField("priority", priority)
 }
 
 // NewInvalidCategoryError creates a new invalid category error
 func NewInvalidCategoryError(categoryType string, categoryValue string) error {
 	return errors.ErrorFromCode(ErrCodeInvalidCategory, 
-		fmt.Sprintf("Category %s: %s is not valid", categoryType, categoryValue), 
-		errors.ErrInvalidInput)
+		"Invalid category", 
+		errors.ErrInvalidInput).
+		WithField("categoryType", categoryType).
+		WithField("categoryValue", categoryValue)
 }
 
 // NewAttachmentNotFoundError creates a new attachment not found error
 func NewAttachmentNotFoundError(attachmentID string, incidentID string) error {
 	return errors.ErrorFromCode(ErrCodeAttachmentNotFound, 
-		fmt.Sprintf("Attachment %s not found for incident %s", attachmentID, incidentID), 
-		errors.ErrNotFound)
+		"Attachment not found", 
+		errors.ErrNotFound).
+		WithField("attachmentID", attachmentID).
+		WithField("incidentID", incidentID)
 }
 
 // NewAttachmentTooLargeError creates a new attachment too large error
 func NewAttachmentTooLargeError(size int64, maxSize int64) error {
 	return errors.ErrorFromCode(ErrCodeAttachmentTooLarge, 
-		fmt.Sprintf("Attachment size %d bytes exceeds maximum allowed size of %d bytes", size, maxSize), 
-		errors.ErrInvalidInput)
+		"Attachment size exceeds maximum allowed size", 
+		errors.ErrInvalidInput).
+		WithField("size", size).
+		WithField("maxSize", maxSize)
 }
 
 // Expose error checking functions from the errors package
@@ -151,6 +162,8 @@ var (
 	IsNotFound = errors.IsNotFound
 	IsConflict = errors.IsConflict
 	IsValidationError = errors.IsValidationError
+	IsUnauthorized = errors.IsUnauthorized
+	IsForbidden = errors.IsForbidden
 	
 	// Add domain-specific error checks
 	IsIncidentNotFound = func(err error) bool {
@@ -173,8 +186,20 @@ var (
 		return errors.IsErrorCode(err, ErrCodeInvalidStatusTransition)
 	}
 	
+	IsInvalidPriority = func(err error) bool {
+		return errors.IsErrorCode(err, ErrCodeInvalidPriority)
+	}
+	
+	IsInvalidCategory = func(err error) bool {
+		return errors.IsErrorCode(err, ErrCodeInvalidCategory)
+	}
+	
 	IsAttachmentNotFound = func(err error) bool {
 		return errors.IsErrorCode(err, ErrCodeAttachmentNotFound)
+	}
+	
+	IsAttachmentTooLarge = func(err error) bool {
+		return errors.IsErrorCode(err, ErrCodeAttachmentTooLarge)
 	}
 )
 
@@ -183,8 +208,17 @@ func Wrap(err error, message string) error {
 	return errors.Wrap(err, message)
 }
 
-// Get AppError from error interface if it is one
-func GetAppError(err error) (*errors.AppError, bool) {
-    appErr, ok := err.(*errors.AppError)
-    return appErr, ok
+// WithOperation adds operation context to an error if it's an AppError
+func WithOperation(err error, operation string) error {
+	return errors.WithOperation(err, operation)
+}
+
+// WithField adds a field to an error if it's an AppError
+func WithField(err error, key string, value any) error {
+	return errors.WithField(err, key, value)
+}
+
+// WithFields adds multiple fields to an error if it's an AppError
+func WithFields(err error, fields map[string]any) error {
+	return errors.WithFields(err, fields)
 }

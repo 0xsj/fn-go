@@ -44,10 +44,10 @@ func (e *Exporter) ExportUsers(users []*models.User, w io.Writer) error {
 // exportJSON exports users in JSON format
 func (e *Exporter) exportJSON(users []*models.User, w io.Writer) error {
 	// Create a sanitized version of users without sensitive data
-	exportUsers := make([]map[string]interface{}, len(users))
+	exportUsers := make([]map[string]any, len(users))
 	
 	for i, user := range users {
-		exportUsers[i] = map[string]interface{}{
+		exportUsers[i] = map[string]any{
 			"id":        user.ID,
 			"username":  user.Username,
 			"email":     user.Email,

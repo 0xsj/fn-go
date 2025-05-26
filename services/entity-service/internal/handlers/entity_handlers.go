@@ -38,7 +38,7 @@ func (h *EntityHandler) RegisterHandlers(conn *nats.Conn) {
 }
 
 // GetEntity handles requests to get an entity by ID
-func (h *EntityHandler) GetEntity(data []byte) (interface{}, error) {
+func (h *EntityHandler) GetEntity(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "entity.get")
 	handlerLogger.Info("Received entity.get request")
 	
@@ -74,7 +74,7 @@ func (h *EntityHandler) GetEntity(data []byte) (interface{}, error) {
 }
 
 // ListEntities handles requests to list all entities
-func (h *EntityHandler) ListEntities(data []byte) (interface{}, error) {
+func (h *EntityHandler) ListEntities(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "entity.list")
 	handlerLogger.Info("Received entity.list request")
 	
@@ -103,7 +103,7 @@ func (h *EntityHandler) ListEntities(data []byte) (interface{}, error) {
 }
 
 // CreateEntity handles requests to create a new entity
-func (h *EntityHandler) CreateEntity(data []byte) (interface{}, error) {
+func (h *EntityHandler) CreateEntity(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "entity.create")
 	handlerLogger.Info("Received entity.create request")
 	

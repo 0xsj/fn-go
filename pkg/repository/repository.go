@@ -70,7 +70,7 @@ func (r *BaseRepository) DatabaseError(operation string, err error) error {
 }
 
 // Logger returns a logger with repository context
-func (r *BaseRepository) Logger(ctx context.Context, operation string, fields ...map[string]interface{}) log.Logger {
+func (r *BaseRepository) Logger(ctx context.Context, operation string, fields ...map[string]any) log.Logger {
 	logger := r.logger.With("operation", operation).
 		With("entity", r.entityName)
 	

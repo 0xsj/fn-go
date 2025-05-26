@@ -38,7 +38,7 @@ func (h *IncidentHandler) RegisterHandlers(conn *nats.Conn) {
 }
 
 // GetIncident handles requests to get an incident by ID
-func (h *IncidentHandler) GetIncident(data []byte) (interface{}, error) {
+func (h *IncidentHandler) GetIncident(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "incident.get")
 	handlerLogger.Info("Received incident.get request")
 	
@@ -79,7 +79,7 @@ func (h *IncidentHandler) GetIncident(data []byte) (interface{}, error) {
 }
 
 // ListIncidents handles requests to list all incidents
-func (h *IncidentHandler) ListIncidents(data []byte) (interface{}, error) {
+func (h *IncidentHandler) ListIncidents(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "incident.list")
 	handlerLogger.Info("Received incident.list request")
 	
@@ -119,7 +119,7 @@ func (h *IncidentHandler) ListIncidents(data []byte) (interface{}, error) {
 }
 
 // CreateIncident handles requests to create a new incident
-func (h *IncidentHandler) CreateIncident(data []byte) (interface{}, error) {
+func (h *IncidentHandler) CreateIncident(data []byte) (any, error) {
 	handlerLogger := h.logger.With("subject", "incident.create")
 	handlerLogger.Info("Received incident.create request")
 	

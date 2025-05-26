@@ -42,11 +42,11 @@ func main() {
 }
 
 func setupHandlers(conn *nats.Conn, logger log.Logger) {
-	patterns.HandleRequest(conn, "service.auth.health", func(data []byte) (interface{}, error) {
+	patterns.HandleRequest(conn, "service.auth.health", func(data []byte) (any, error) {
 		handlerLogger := logger.With("subject", "service.auth.health")
 		handlerLogger.Info("Received health check request")
 		
-		response := map[string]interface{}{
+		response := map[string]any{
 			"service":  "auth-service",
 			"status":   "ok",
 			"time":     time.Now().Format(time.RFC3339),

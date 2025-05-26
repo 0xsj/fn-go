@@ -76,8 +76,8 @@ func Authentication(conn *nats.Conn, respHandler *response.HTTPHandler, logger l
 			// Validate token with auth service
 			var result struct {
 				Success bool        `json:"success"`
-				Data    interface{} `json:"data,omitempty"`
-				Error   interface{} `json:"error,omitempty"`
+				Data    any `json:"data,omitempty"`
+				Error   any `json:"error,omitempty"`
 			}
 			
 			authLogger := logger.With("operation", "token_validation")
@@ -124,8 +124,8 @@ func Authentication(conn *nats.Conn, respHandler *response.HTTPHandler, logger l
 }
 
 // GetUserFromContext gets the user from the request context
-func GetUserFromContext(r *http.Request) (map[string]interface{}, error) {
-	user, ok := r.Context().Value(UserKey).(map[string]interface{})
+func GetUserFromContext(r *http.Request) (map[string]any, error) {
+	user, ok := r.Context().Value(UserKey).(map[string]any)
 	if !ok {
 		return nil, errors.ErrorFromCode(
 			"UNAUTHORIZED", 

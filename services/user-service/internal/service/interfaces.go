@@ -13,15 +13,15 @@ type UserService interface {
 	// User management
 	CreateUser(ctx context.Context, req dto.CreateUserRequest) (*models.User, error)
 	GetUser(ctx context.Context, id string) (*models.User, error)
-	// GetUserByEmail(ctx context.Context, email string) (*models.User, error)
-	// GetUserByUsername(ctx context.Context, username string) (*models.User, error)
-	// UpdateUser(ctx context.Context, id string, req dto.UpdateUserRequest) (*models.User, error)
-	// DeleteUser(ctx context.Context, id string) error
-	// ListUsers(ctx context.Context, req dto.ListUsersRequest) ([]*models.User, int, error)
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
+	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
+	UpdateUser(ctx context.Context, id string, req dto.UpdateUserRequest) (*models.User, error)
+	DeleteUser(ctx context.Context, id string) error
+	ListUsers(ctx context.Context, req dto.ListUsersRequest) ([]*models.User, int, error)
 	
 	// User profile management
-	// UpdateUserProfile(ctx context.Context, id string, req dto.UpdateProfileRequest) (*models.User, error)
-	// UpdateUserPassword(ctx context.Context, id string, req dto.UpdatePasswordRequest) error
+	UpdateUserProfile(ctx context.Context, id string, req dto.UpdateProfileRequest) (*models.User, error)
+	UpdateUserPassword(ctx context.Context, id string, req dto.UpdatePasswordRequest) error
 	
 	// User permissions and roles
 	// AssignRole(ctx context.Context, userID string, role string) error
@@ -32,6 +32,6 @@ type UserService interface {
 
 // HealthService defines health check operations
 type HealthService interface {
-	Check(ctx context.Context) (map[string]interface{}, error)
-	DeepCheck(ctx context.Context) (map[string]interface{}, error)
+	Check(ctx context.Context) (map[string]any, error)
+	DeepCheck(ctx context.Context) (map[string]any, error)
 }

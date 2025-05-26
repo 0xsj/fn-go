@@ -12,14 +12,14 @@ import (
 type Response struct {
 	Success bool        `json:"success"`
 	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
-	Meta    interface{} `json:"meta,omitempty"`
+	Data    any `json:"data,omitempty"`
+	Meta    any `json:"meta,omitempty"`
 }
 
 type ErrorResponse struct {
 	Code    string      `json:"code"`
 	Message string      `json:"message"`
-	Details interface{} `json:"details,omitempty"`
+	Details any `json:"details,omitempty"`
 }
 
 type PaginationMeta struct {

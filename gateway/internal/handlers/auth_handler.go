@@ -93,7 +93,7 @@ func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) 
 	}
 	
 	// Proxy the request
-	h.proxy.ProxyRequest(w, r, "auth.verify-email", func(r *http.Request) (interface{}, error) {
+	h.proxy.ProxyRequest(w, r, "auth.verify-email", func(r *http.Request) (any, error) {
 		return map[string]string{"token": token}, nil
 	})
 }

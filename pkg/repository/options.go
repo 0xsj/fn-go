@@ -21,20 +21,20 @@ const (
 
 type QueryOption func(*QueryOptions)
 
-func WithFilter(field string, value interface{}) QueryOption {
+func WithFilter(field string, value any) QueryOption {
 	return func(opts *QueryOptions) {
 		if opts.Filters == nil {
-			opts.Filters = make(map[string]interface{})
+			opts.Filters = make(map[string]any)
 		}
 		opts.Filters[field] = value
 	}
 }
 
 // WithFilters adds multiple filter conditions
-func WithFilters(filters map[string]interface{}) QueryOption {
+func WithFilters(filters map[string]any) QueryOption {
 	return func(opts *QueryOptions) {
 		if opts.Filters == nil {
-			opts.Filters = make(map[string]interface{})
+			opts.Filters = make(map[string]any)
 		}
 		for k, v := range filters {
 			opts.Filters[k] = v

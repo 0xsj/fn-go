@@ -1,3 +1,4 @@
+# infra/observability/prometheus/prometheus.yml
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -7,14 +8,51 @@ rule_files:
   - "rules/system-alerts.yml"
 
 scrape_configs:
+  # Core Services
+  - job_name: "auth-service"
+    static_configs:
+      - targets: ["auth-service:8080"]
+
   - job_name: "user-service"
     static_configs:
       - targets: ["user-service:8080"]
 
+  - job_name: "entity-service"
+    static_configs:
+      - targets: ["entity-service:8080"]
+
+  - job_name: "incident-service"
+    static_configs:
+      - targets: ["incident-service:8080"]
+
+  - job_name: "location-service"
+    static_configs:
+      - targets: ["location-service:8080"]
+
+  - job_name: "monitoring-service"
+    static_configs:
+      - targets: ["monitoring-service:8080"]
+
+  - job_name: "notification-service"
+    static_configs:
+      - targets: ["notification-service:8080"]
+
+  - job_name: "chat-service"
+    static_configs:
+      - targets: ["chat-service:8080"]
+
+  # Gateway
   - job_name: "gateway"
     static_configs:
       - targets: ["gateway:8080"]
 
+  # Infrastructure
   - job_name: "nats"
     static_configs:
-      - targets: ["nats-exporter:9090"]
+      - targets: ["nats:8222"]
+
+  - job_name: "mysql"
+    static_configs:
+      - targets: ["mysql:3306"]
+    metrics_path: /metrics
+    scrape_interval: 30s
