@@ -1,67 +1,138 @@
+// services/auth-service/internal/dto/response.go
 package dto
 
-type LoginRequest struct {
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
+import (
+	"time"
+
+	"github.com/0xsj/fn-go/pkg/models"
+)
+
+// LoginResponse represents a successful login response
+type LoginResponse struct {
+	AccessToken string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	TokenType string `json:"tokenType"` // "Bearer"
+	ExpiresIn int64 `json:"expiresIn"` // seconds until access token expires
+	User UserInfo `json:"user"`
+	SessionID string `json:"sessionId"`
+}
+
+// RefreshTokenResponse represents a successful token refresh response
+type RefreshTokenResponse struct {
+	AccessToken string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	TokenType string `json:"tokenType"` // "Bearer"
+	ExpiresIn int64 `json:"expiresIn"` // seconds until access token expires
+}
+
+// ValidateTokenResponse represents a token validation response
+type ValidateTokenResponse struct {
+	Valid bool `json:"valid"`
+	Claims *models.TokenClaims `json:"claims,omitempty"`
+	User *UserInfo `json:"user,omitempty"`
+}
+
+// UserInfo represents user information in auth responses
+type UserInfo struct {
+	ID string `json:"id"`
+	Username string `json:"username"`
+	Email string `json:"email"`
+	FirstName string `json:"firstName"`
+	LastName string `json:"lastName"`
+	Role string `json:"role"`
+	Status string `json:"status"`
+	EmailVerified bool `json:"emailVerified"`
+	LastLoginAt *time.Time `json:"lastLoginAt,omitempty"`
+}
+
+// SessionInfo represents session information
+type SessionInfo struct {
+	ID string `json:"id"`
+	UserID string `json:"userId"`
 	UserAgent string `json:"userAgent,omitempty"`
 	IPAddress string `json:"ipAddress,omitempty"`
+	LastActive time.Time `json:"lastActive"`
+	ExpiresAt time.Time `json:"expiresAt"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
-type RefreshTokenRequest struct {
-	RefreshToken string `json:"refreshToken" validate:"required"`
-}
-
-// ValidateTokenRequest represents a token validation request
-type ValidateTokenRequest struct {
-	Token string `json:"token" validate:"required"`
-}
-
-// RevokeTokenRequest represents a token revocation request
-type RevokeTokenRequest struct {
-	Token string `json:"token" validate:"required"`
-	TokenType string `json:"tokenType,omitempty"` // "access", "refresh", or "all"
-}
-
-// LogoutRequest represents a logout request
-type LogoutRequest struct {
-	UserID string `json:"userId" validate:"required"`
-	SessionID string `json:"sessionId,omitempty"`
-	RevokeAllSessions bool `json:"revokeAllSessions,omitempty"`
-}
-
-// ChangePasswordRequest represents a password change request
-type ChangePasswordRequest struct {
-	UserID string `json:"userId" validate:"required"`
-	CurrentPassword string `json:"currentPassword" validate:"required"`
-	NewPassword string `json:"newPassword" validate:"required,min=8"`
-}
-
-// ResetPasswordRequest represents a password reset request
-type ResetPasswordRequest struct {
-	Token string `json:"token" validate:"required"`
-	NewPassword string `json:"newPassword" validate:"required,min=8"`
-}
-
-// ForgotPasswordRequest represents a forgot password request
-type ForgotPasswordRequest struct {
-	Email string `json:"email" validate:"required,email"`
-}
-
-// VerifyEmailRequest represents an email verification request
-type VerifyEmailRequest struct {
-	Token string `json:"token" validate:"required"`
-}
-
-// CreatePermissionRequest represents a permission creation request
-type CreatePermissionRequest struct {
-	Name string `json:"name" validate:"required"`
+// PermissionResponse represents a permission response
+type PermissionResponse struct {
+	ID string `json:"id"`
+	Name string `json:"name"`
 	Description string `json:"description,omitempty"`
-	Resource string `json:"resource" validate:"required"`
-	Action string `json:"action" validate:"required"`
+	Resource string `json:"resource"`
+	Action string `json:"action"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-// AssignPermissionRequest represents a role-permission assignment request
-type AssignPermissionRequest struct {
-	RoleID string `json:"roleId" validate:"required"`
-	PermissionID string `json:"permissionId" validate:"required"`
+// RolePermissionsResponse represents role permissions response
+type RolePermissionsResponse struct {
+	RoleID string `json:"roleId"`
+	Permissions []PermissionResponse `json:"permissions"`
+}
+
+// TokenInfoResponse represents token information (for debugging/admin)
+type TokenInfoResponse struct {
+	TokenID string `json:"tokenId"`
+	UserID string `json:"userId"`
+	Type string `json:"type"`
+	ExpiresAt time.Time `json:"expiresAt"`
+	IssuedAt time.Time `json:"issuedAt"`
+	IsRevoked bool `json:"isRevoked"`
+}
+
+// AuthStatsResponse represents authentication statistics
+type AuthStatsResponse struct {
+	ActiveSessions int `json:"activeSessions"`
+	TotalTokensIssued int `json:"totalTokensIssued"`
+	RevokedTokens int `json:"revokedTokens"`
+	FailedLoginAttempts int `json:"failedLoginAttempts"`
+}
+
+// Helper functions to convert models to DTOs
+
+// FromUser converts a user model to UserInfo DTO
+func FromUser(user interface{}) UserInfo {
+	// This would need to be adapted based on how you get user info from user service
+	// For now, returning a basic structure
+	return UserInfo{
+		// Will be populated based on actual user data from user service
+	}
+}
+
+// FromPermission converts a permission model to PermissionResponse DTO
+func FromPermission(permission *models.Permission) PermissionResponse {
+	return PermissionResponse{
+		ID: permission.ID,
+		Name: permission.Name,
+		Description: permission.Description,
+		Resource: permission.Resource,
+		Action: permission.Action,
+		CreatedAt: permission.CreatedAt,
+		UpdatedAt: permission.UpdatedAt,
+	}
+}
+
+// FromPermissions converts a slice of permission models to response DTOs
+func FromPermissions(permissions []*models.Permission) []PermissionResponse {
+	responses := make([]PermissionResponse, len(permissions))
+	for i, permission := range permissions {
+		responses[i] = FromPermission(permission)
+	}
+	return responses
+}
+
+// FromSession converts a session model to SessionInfo DTO
+func FromSession(session *models.Session) SessionInfo {
+	return SessionInfo{
+		ID: session.ID,
+		UserID: session.UserID,
+		UserAgent: session.UserAgent,
+		IPAddress: session.IPAddress,
+		LastActive: session.LastActive,
+		ExpiresAt: session.ExpiresAt,
+		CreatedAt: session.CreatedAt,
+	}
 }
