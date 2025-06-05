@@ -15,6 +15,7 @@ var (
 	ErrUnauthorized     = stderrors.New("unauthorized")
 	ErrForbidden        = stderrors.New("forbidden")
 	ErrNotFound         = stderrors.New("resource not found")
+	ErrConflict         = stderrors.New("conflict")    
 	ErrInternalServer   = stderrors.New("internal server error")
 	ErrDuplicateEntry   = stderrors.New("duplicate entry")
 	ErrValidationFailed = stderrors.New("validation failed")
