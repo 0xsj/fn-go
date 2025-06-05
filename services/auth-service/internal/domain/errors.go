@@ -162,6 +162,45 @@ func NewTooManyRequestsError(message string) error {
 		errors.ErrRateLimited)
 }
 
+func NewUserNotFoundError(identifier string) error {
+	return errors.ErrorFromCode("USER_NOT_FOUND",
+		"User not found",
+		errors.ErrNotFound).WithField("identifier", identifier)
+}
+
+func NewUserAlreadyExistsError(identifier string) error {
+	return errors.ErrorFromCode("USER_ALREADY_EXISTS",
+		"User already exists",
+		errors.ErrConflict).WithField("identifier", identifier)
+}
+
+func NewAccountInactiveError(userID string) error {
+	return errors.ErrorFromCode("ACCOUNT_INACTIVE",
+		"Account is inactive",
+		errors.ErrForbidden).WithField("userID", userID)
+}
+
+// NewAccountLockedError creates a new account locked error
+func NewAccountLockedError(userID string) error {
+	return errors.ErrorFromCode("ACCOUNT_LOCKED",
+		"Account is locked due to too many failed login attempts",
+		errors.ErrForbidden).WithField("userID", userID)
+}
+
+// NewEmailAlreadyVerifiedError creates a new email already verified error
+func NewEmailAlreadyVerifiedError(userID string) error {
+	return errors.ErrorFromCode("EMAIL_ALREADY_VERIFIED",
+		"Email is already verified",
+		errors.ErrConflict).WithField("userID", userID)
+}
+
+// NewInternalError creates a generic internal error
+func NewInternalError(message string) error {
+	return errors.ErrorFromCode("INTERNAL_SERVER_ERROR",
+		message,
+		errors.ErrInternalServer)
+}
+
 // Expose error checking functions
 var (
 	IsTokenNotFound = func(err error) bool {
