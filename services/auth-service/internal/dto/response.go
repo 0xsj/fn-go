@@ -27,9 +27,9 @@ type RefreshTokenResponse struct {
 
 // ValidateTokenResponse represents a token validation response
 type ValidateTokenResponse struct {
-	Valid bool `json:"valid"`
-	Claims *models.TokenClaims `json:"claims,omitempty"`
-	User *UserInfo `json:"user,omitempty"`
+    Valid bool `json:"valid"`
+    Claims *models.TokenClaims `json:"claims,omitempty"`
+    User UserInfo `json:"user"`  // ← Remove the pointer
 }
 
 // UserInfo represents user information in auth responses

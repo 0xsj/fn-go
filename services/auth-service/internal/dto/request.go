@@ -8,6 +8,17 @@ type LoginRequest struct {
 	IPAddress string `json:"ipAddress,omitempty"`
 }
 
+type RegisterRequest struct {
+	Username  string `json:"username" validate:"required,min=3,max=50"`
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required,min=8"`
+	FirstName string `json:"firstName" validate:"required"`
+	LastName  string `json:"lastName" validate:"required"`
+	Phone     string `json:"phone,omitempty"`
+	UserAgent string `json:"userAgent,omitempty"`
+	IPAddress string `json:"ipAddress,omitempty"`
+}
+
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refreshToken" validate:"required"`
 }
